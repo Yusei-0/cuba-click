@@ -7,6 +7,8 @@ import {
   ShoppingBag,
   LogOut,
   Menu,
+  Users,
+  Layers,
 } from "lucide-react";
 
 export function AdminLayout() {
@@ -17,6 +19,8 @@ export function AdminLayout() {
   const menuItems = [
     { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { path: "/admin/productos", label: "Productos", icon: Package },
+    { path: "/admin/categorias", label: "Categorías", icon: Layers },
+    { path: "/admin/proveedores", label: "Proveedores", icon: Users },
     { path: "/admin/pedidos", label: "Pedidos", icon: ShoppingBag },
   ];
 

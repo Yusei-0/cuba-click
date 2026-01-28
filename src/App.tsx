@@ -13,6 +13,10 @@ import { AdminDashboard } from "./pages/admin/AdminDashboard";
 import { AdminProductsPage } from "./pages/admin/AdminProductsPage";
 import { AdminProductFormPage } from "./pages/admin/AdminProductFormPage";
 import { AdminOrdersPage } from "./pages/admin/AdminOrdersPage";
+import { AdminCategoriesPage } from "./pages/admin/categories/AdminCategoriesPage";
+import { AdminCategoryFormPage } from "./pages/admin/categories/AdminCategoryFormPage";
+import { AdminProvidersPage } from "./pages/admin/providers/AdminProvidersPage";
+import { AdminProviderFormPage } from "./pages/admin/providers/AdminProviderFormPage";
 
 function App() {
   return (
@@ -55,6 +59,12 @@ function App() {
           <Route path="productos" element={<AdminProductsPage />} />
           <Route path="productos/nuevo" element={<AdminProductFormPage />} />
           <Route path="productos/:id" element={<AdminProductFormPage />} />
+          <Route path="categorias" element={<AdminCategoriesPage />} />
+          <Route path="categorias/nueva" element={<AdminCategoryFormPage />} />
+          <Route path="categorias/:id" element={<AdminCategoryFormPage />} />
+          <Route path="proveedores" element={<AdminProvidersPage />} />
+          <Route path="proveedores/nuevo" element={<AdminProviderFormPage />} />
+          <Route path="proveedores/:id" element={<AdminProviderFormPage />} />
           <Route path="pedidos" element={<AdminOrdersPage />} />
         </Route>
       </Routes>
