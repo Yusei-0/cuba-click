@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { Database } from "../types/database.types";
+import type { Database } from "../types/database.types";
 import { ProductCard } from "../components/ui/ProductCard";
 import { Link } from "react-router-dom";
 
@@ -91,7 +91,7 @@ export function HomePage() {
       <section>
         <h2 className="text-3xl font-bold mb-6">Novedades</h2>
         {featuredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {featuredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

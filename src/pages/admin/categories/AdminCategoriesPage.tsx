@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useToastStore } from "../../../store/useToastStore";
 import { supabase } from "../../../lib/supabase";
 import type { Database } from "../../../types/database.types";
 import { Plus, Edit, Trash2, Search } from "lucide-react";
@@ -10,6 +11,7 @@ export function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const { addToast } = useToastStore();
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -39,9 +41,10 @@ export function AdminCategoriesPage() {
       const { error } = await supabase.from("categorias").delete().eq("id", id);
       if (error) throw error;
       setCategories(categories.filter((c) => c.id !== id));
+      addToast("Categoría eliminada correctamente", "success");
     } catch (err) {
       console.error("Error deleting:", err);
-      alert("Error al eliminar categoría");
+      addToast("Error al eliminar categoría", "error");
     }
   };
 

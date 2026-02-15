@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabase";
 import type { Database } from "../../types/database.types";
 import { ArrowLeft, Upload, Image as ImageIcon } from "lucide-react";
 import { useImageUpload } from "../../hooks/useImageUpload";
+import { useToastStore } from "../../store/useToastStore";
 
 type ProductInput = Database["public"]["Tables"]["productos"]["Insert"];
 
@@ -17,6 +18,7 @@ export function AdminProductFormPage() {
   const [providers, setProviders] = useState<any[]>([]);
   const { uploadImage, uploading: uploadingImage } = useImageUpload();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const { addToast } = useToastStore();
 
   const {
     register,
@@ -90,9 +92,10 @@ export function AdminProductFormPage() {
         if (error) throw error;
       }
       navigate("/admin/productos");
+      addToast("Producto guardado exitosamente", "success");
     } catch (error) {
       console.error("Error saving product:", error);
-      alert("Error al guardar el producto");
+      addToast("Error al guardar el producto", "error");
     } finally {
       setLoading(false);
     }

@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
-import { Database } from "../types/database.types";
+import type { Database } from "../types/database.types";
 import { useCartStore } from "../store/useCartStore";
 import { ShoppingCart, ArrowLeft, Truck, ShieldCheck } from "lucide-react";
+import { formatPrice } from "../lib/utils";
 
 type Product = Database["public"]["Tables"]["productos"]["Row"];
 
 export function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const addItem = useCartStore((state) => state.addItem);
+  const { addItem, clearCart } = useCartStore();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -86,7 +87,7 @@ export function ProductPage() {
             )}
             <h1 className="card-title text-3xl mb-2">{product.nombre}</h1>
             <p className="text-3xl font-bold text-primary">
-              ${product.precio_final}
+              {formatPrice(product.precio_final)}
             </p>
           </div>
 
@@ -108,10 +109,13 @@ export function ProductPage() {
           <div className="card-actions justify-end mt-auto">
             <button
               className="btn btn-primary btn-lg w-full gap-2"
-              onClick={() => addItem(product)}
+              onClick={() => {
+                clearCart();
+                addItem(product);
+                navigate("/checkout");
+              }}
             >
-              <ShoppingCart className="h-5 w-5" />
-              Añadir al Carrito
+              Comprar Ahora
             </button>
           </div>
         </div>

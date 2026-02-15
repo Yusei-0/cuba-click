@@ -175,6 +175,7 @@ export interface Database {
           direccion_detalle: string;
           moneda_id: string | null;
           metodo_pago_id: string | null;
+          proveedor_id: string | null;
           total_productos: number;
           total_envio: number;
           estado: string | null;
@@ -188,6 +189,7 @@ export interface Database {
           direccion_detalle: string;
           moneda_id?: string | null;
           metodo_pago_id?: string | null;
+          proveedor_id?: string | null;
           total_productos?: number;
           total_envio?: number;
           estado?: string | null;
@@ -201,6 +203,7 @@ export interface Database {
           direccion_detalle?: string;
           moneda_id?: string | null;
           metodo_pago_id?: string | null;
+          proveedor_id?: string | null;
           total_productos?: number;
           total_envio?: number;
           estado?: string | null;
@@ -228,6 +231,23 @@ export interface Database {
           producto_id?: string | null;
           cantidad?: number;
           precio_unitario?: number;
+        };
+      };
+      proveedor_metodos_pago: {
+        Row: {
+          id: string;
+          proveedor_id: string;
+          metodo_pago_id: string;
+        };
+        Insert: {
+          id?: string;
+          proveedor_id: string;
+          metodo_pago_id: string;
+        };
+        Update: {
+          id?: string;
+          proveedor_id?: string;
+          metodo_pago_id?: string;
         };
       };
     };

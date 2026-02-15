@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 import type { Database } from "../../../types/database.types";
 import { Plus, Edit, Trash2, Search, Phone } from "lucide-react";
+import { useToastStore } from "../../../store/useToastStore";
 
 type Provider = Database["public"]["Tables"]["proveedores"]["Row"];
 
@@ -10,6 +11,7 @@ export function AdminProvidersPage() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const { addToast } = useToastStore();
 
   const fetchProviders = async () => {
     setLoading(true);
@@ -37,9 +39,10 @@ export function AdminProvidersPage() {
         .eq("id", id);
       if (error) throw error;
       setProviders(providers.filter((p) => p.id !== id));
+      addToast("Proveedor eliminado correctamente", "success");
     } catch (err) {
       console.error("Error deleting:", err);
-      alert("Error al eliminar proveedor");
+      addToast("Error al eliminar proveedor", "error");
     }
   };
 

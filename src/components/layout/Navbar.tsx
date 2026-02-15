@@ -71,16 +71,6 @@ export function Navbar() {
         </div>
 
         {/* Cart */}
-        <Link to="/cart" className="btn btn-ghost btn-circle">
-          <div className="indicator">
-            <ShoppingCart className="h-5 w-5" />
-            {cartTotalItems > 0 && (
-              <span className="badge badge-sm badge-primary indicator-item">
-                {cartTotalItems}
-              </span>
-            )}
-          </div>
-        </Link>
       </div>
 
       {/* Mobile Search Bar (Expandable) */}

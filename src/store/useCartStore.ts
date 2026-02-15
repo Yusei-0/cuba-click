@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Database } from "../types/database.types";
+import type { Database } from "../types/database.types";
 
 type Product = Database["public"]["Tables"]["productos"]["Row"];
 
@@ -21,6 +21,17 @@ export const useCartStore = create<CartState>((set, get) => ({
   items: [],
   addItem: (product) => {
     const items = get().items;
+
+    // Check for provider mismatch
+    if (items.length > 0) {
+      const currentProviderId = items[0].proveedor_id;
+      if (product.proveedor_id !== currentProviderId) {
+        // Different provider: Replace cart
+        set({ items: [{ ...product, quantity: 1 }] });
+        return;
+      }
+    }
+
     const existingItem = items.find((item) => item.id === product.id);
 
     if (existingItem) {

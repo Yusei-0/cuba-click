@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { Database } from "../../types/database.types";
 import { useCartStore } from "../../store/useCartStore";
-import { ShoppingCart } from "lucide-react";
+
+import { formatPrice } from "../../lib/utils";
 
 type Product = Database["public"]["Tables"]["productos"]["Row"];
 
@@ -10,14 +11,8 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const addItem = useCartStore((state) => state.addItem);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("es-CU", {
-      style: "currency",
-      currency: "USD", // Assuming USD for now based on context, or use proper currency logic
-    }).format(price);
-  };
+  const { addItem, clearCart } = useCartStore();
+  const navigate = useNavigate();
 
   return (
     <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-300">
@@ -32,11 +27,6 @@ export function ProductCard({ product }: ProductCardProps) {
         ) : (
           <div className="flex items-center justify-center h-full w-full text-gray-400">
             Sin imagen
-          </div>
-        )}
-        {product.precio_costo < product.precio_final && (
-          <div className="badge badge-secondary absolute top-2 right-2">
-            Oferta
           </div>
         )}
       </figure>
@@ -57,10 +47,14 @@ export function ProductCard({ product }: ProductCardProps) {
             {formatPrice(product.precio_final)}
           </span>
           <button
-            className="btn btn-circle btn-primary btn-sm"
-            onClick={() => addItem(product)}
+            className="btn btn-primary btn-sm"
+            onClick={() => {
+              clearCart();
+              addItem(product);
+              navigate("/checkout");
+            }}
           >
-            <ShoppingCart className="h-4 w-4" />
+            Comprar
           </button>
         </div>
       </div>

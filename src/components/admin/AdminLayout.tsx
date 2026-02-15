@@ -9,6 +9,7 @@ import {
   Menu,
   Users,
   Layers,
+  Home,
 } from "lucide-react";
 
 export function AdminLayout() {
@@ -45,7 +46,11 @@ export function AdminLayout() {
             );
           })}
         </ul>
-        <div className="p-4 border-t border-base-200">
+        <div className="p-4 border-t border-base-200 flex flex-col gap-2">
+          <Link to="/" className="btn btn-ghost w-full justify-start gap-2">
+            <Home className="h-5 w-5" />
+            Ver Tienda
+          </Link>
           <button
             onClick={() => signOut()}
             className="btn btn-ghost w-full justify-start gap-2 text-error"
@@ -98,7 +103,11 @@ export function AdminLayout() {
                 );
               })}
             </ul>
-            <div className="mt-auto">
+            <div className="mt-auto flex flex-col gap-2">
+              <Link to="/" className="btn btn-ghost w-full justify-start gap-2">
+                <Home className="h-5 w-5" />
+                Ver Tienda
+              </Link>
               <button
                 onClick={() => signOut()}
                 className="btn btn-ghost w-full justify-start gap-2 text-error"

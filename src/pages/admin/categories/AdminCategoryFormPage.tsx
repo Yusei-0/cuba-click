@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { supabase } from "../../../lib/supabase";
 import type { Database } from "../../../types/database.types";
 import { ArrowLeft } from "lucide-react";
+import { useToastStore } from "../../../store/useToastStore";
 
 type CategoryInput = Database["public"]["Tables"]["categorias"]["Insert"];
 
@@ -12,6 +13,7 @@ export function AdminCategoryFormPage() {
   const navigate = useNavigate();
   const isEditing = Boolean(id);
   const [loading, setLoading] = useState(false);
+  const { addToast } = useToastStore();
 
   const {
     register,
@@ -54,7 +56,7 @@ export function AdminCategoryFormPage() {
       navigate("/admin/categorias");
     } catch (error) {
       console.error("Error saving category:", error);
-      alert("Error al guardar categoría");
+      addToast("Error al guardar categoría", "error");
     } finally {
       setLoading(false);
     }

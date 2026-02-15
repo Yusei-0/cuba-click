@@ -17,6 +17,9 @@ import { AdminCategoriesPage } from "./pages/admin/categories/AdminCategoriesPag
 import { AdminCategoryFormPage } from "./pages/admin/categories/AdminCategoryFormPage";
 import { AdminProvidersPage } from "./pages/admin/providers/AdminProvidersPage";
 import { AdminProviderFormPage } from "./pages/admin/providers/AdminProviderFormPage";
+import { ToastContainer } from "./components/ui/ToastContainer";
+import { CategoryResolver } from "./pages/CategoryResolver";
+import { NotFoundPage } from "./pages/NotFoundPage";
 
 function App() {
   return (
@@ -42,6 +45,10 @@ function App() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/pedidos" element={<OrdersPage />} />
+          {/* Dynamic Category Route & 404 */}
+          {/* We place this last to avoid intercepting other routes */}
+          <Route path="/:categoryName" element={<CategoryResolver />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
 
         {/* Admin Routes */}
