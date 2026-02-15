@@ -7,7 +7,7 @@ export function useImageUpload() {
 
   const uploadImage = async (
     file: File,
-    bucket: string = "photo",
+    bucket: string = "products",
   ): Promise<string | null> => {
     try {
       setUploading(true);
