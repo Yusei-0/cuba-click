@@ -7,6 +7,8 @@ import { MobileLayout } from "../components/layout/MobileLayout";
 import { Header } from "../components/layout/Header";
 import { SearchBar } from "../components/ui/SearchBar";
 import { CategoryList } from "../components/ui/CategoryList";
+import { ProductCardSkeleton } from "../components/ui/skeletons/ProductCardSkeleton";
+import { CategoryListSkeleton } from "../components/ui/skeletons/CategoryListSkeleton";
 
 
 type Product = Database["public"]["Tables"]["productos"]["Row"];
@@ -94,20 +96,13 @@ export function HomePage() {
     }
   };
 
-  if (loading) {
-    return (
-      <MobileLayout>
-        <div className="flex justify-center items-center h-screen">
-          <span className="loading loading-spinner loading-lg text-primary"></span>
-        </div>
-      </MobileLayout>
-    );
-  }
+  // Remove blocking loader check
+  // if (loading) { ... }
 
   return (
     <MobileLayout>
       <div className="bg-white min-h-screen pb-4">
-        {/* Header */}
+        {/* Header - Always visible */}
         <Header />
 
         <div className="space-y-6">
@@ -127,13 +122,18 @@ export function HomePage() {
                 Ver todas
               </Link>
             </div>
-            <CategoryList
-              categories={categories}
-              selectedCategory={selectedCategory}
-              onSelectCategory={handleCategorySelect}
-              onEndReached={handleLoadMoreCategories}
-              isLoadingMore={loadingMoreCategories}
-            />
+            
+            {loading && categories.length === 0 ? (
+               <CategoryListSkeleton />
+            ) : (
+                <CategoryList
+                  categories={categories}
+                  selectedCategory={selectedCategory}
+                  onSelectCategory={handleCategorySelect}
+                  onEndReached={handleLoadMoreCategories}
+                  isLoadingMore={loadingMoreCategories}
+                />
+            )}
           </div>
 
 
@@ -141,7 +141,14 @@ export function HomePage() {
           {/* Featured Products */}
           <div className="px-4">
             <h2 className="text-lg font-bold text-gray-900 mb-4">Productos Destacados</h2>
-            {featuredProducts.length > 0 ? (
+            
+            {loading && featuredProducts.length === 0 ? (
+              <div className="grid grid-cols-2 gap-3">
+                {[...Array(6)].map((_, i) => (
+                  <ProductCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : featuredProducts.length > 0 ? (
               <div className="grid grid-cols-2 gap-3">
                 {featuredProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
