@@ -206,6 +206,7 @@ export interface Database {
           total_productos: number;
           total_envio: number;
           estado: string | null;
+          codigo_tracking: string | null;
           created_at: string;
         };
         Insert: {
@@ -221,6 +222,7 @@ export interface Database {
           total_productos?: number;
           total_envio?: number;
           estado?: string | null;
+          codigo_tracking?: string | null;
           created_at?: string;
         };
         Update: {
@@ -236,6 +238,7 @@ export interface Database {
           total_productos?: number;
           total_envio?: number;
           estado?: string | null;
+          codigo_tracking?: string | null;
           created_at?: string;
         };
       };

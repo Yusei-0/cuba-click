@@ -1,171 +1,263 @@
 import { useState } from "react";
-import { supabase } from "../lib/supabase";
-import type { Database } from "../types/database.types";
-import { Search, Package } from "lucide-react";
-import { MobileLayout } from "../components/layout/MobileLayout";
-import { Header } from "../components/layout/Header";
+import { useNavigate } from "react-router-dom";
+import { useOrdersStore } from "../store/useOrdersStore";
+import {
+  ArrowLeft,
+  Package,
+  Copy,
+  CheckCircle,
+  Clock,
+  Truck,
+  XCircle,
+  Search,
+} from "lucide-react";
+import { formatPrice } from "../lib/utils";
 
-type Order = Database["public"]["Tables"]["pedidos"]["Row"] & {
-  detalles_pedido: (Database["public"]["Tables"]["detalles_pedido"]["Row"] & {
-    productos: Database["public"]["Tables"]["productos"]["Row"] | null;
-  })[];
+const STATUS_CONFIG = {
+  pendiente: {
+    label: "Pendiente",
+    icon: Clock,
+    color: "text-yellow-600",
+    bgColor: "bg-yellow-100",
+  },
+  confirmado: {
+    label: "Confirmado",
+    icon: CheckCircle,
+    color: "text-blue-600",
+    bgColor: "bg-blue-100",
+  },
+  enviado: {
+    label: "Enviado",
+    icon: Truck,
+    color: "text-purple-600",
+    bgColor: "bg-purple-100",
+  },
+  entregado: {
+    label: "Entregado",
+    icon: CheckCircle,
+    color: "text-green-600",
+    bgColor: "bg-green-100",
+  },
+  cancelado: {
+    label: "Cancelado",
+    icon: XCircle,
+    color: "text-red-600",
+    bgColor: "bg-red-100",
+  },
 };
 
 export function OrdersPage() {
+  const navigate = useNavigate();
+  const { orders } = useOrdersStore();
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [order, setOrder] = useState<Order | null>(null);
-  const [error, setError] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchTerm.trim()) return;
+  const filteredOrders = orders.filter(
+    (order) =>
+      order.codigo_tracking.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.producto_nombre.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-    setLoading(true);
-    setError("");
-    setOrder(null);
-
+  const handleCopy = async (code: string, id: string) => {
     try {
-      // Since we don't have Auth, we rely on the UUID ID for "security" (it's hard to guess).
-      // A phone number search would be insecure without SMS verification.
-      // Users should have saved their Order ID from the checkout page.
-
-      // Actually, let's allow searching by ID for now.
-      const { data, error } = await supabase
-        .from("pedidos")
-        .select("*, detalles_pedido(*, productos(*))")
-        .eq("id", searchTerm.trim())
-        .single();
-
-      if (error) throw error;
-      if (!data) {
-        setError("Pedido no encontrado. Verifique el ID.");
-      } else {
-        setOrder(data as any);
-      }
-    } catch (err: any) {
-      console.error(err);
-      setError(
-        "No se pudo encontrar el pedido. Asegúrese de que el ID es correcto.",
-      );
-    } finally {
-      setLoading(false);
+      await navigator.clipboard.writeText(code);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
     }
   };
 
-  return (
-    <MobileLayout>
-      <div className="bg-white min-h-screen pb-4">
-        <Header />
-        <div className="max-w-4xl mx-auto p-4">
-          <h1 className="text-2xl font-bold mb-6 text-center">Rastrear Pedido</h1>
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("es-ES", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
+  };
 
-          <div className="card bg-white shadow-sm border border-gray-100 mb-8 rounded-2xl">
-            <div className="card-body p-4">
-              <form onSubmit={handleSearch} className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="ID del pedido (ej. a1b2...)"
-                  className="input input-bordered grow bg-gray-50 focus:bg-white transition-colors"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <button
-                  type="submit"
-                  className="btn btn-primary btn-square"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <span className="loading loading-spinner"></span>
-                  ) : (
-                    <Search className="w-5 h-5 text-white" />
-                  )}
-                </button>
-              </form>
-              {error && <p className="text-error text-xs mt-2 text-center font-medium bg-red-50 p-2 rounded-lg">{error}</p>}
-            </div>
+  return (
+    <div className="min-h-screen bg-gray-50 pb-20">
+      {/* Header */}
+      <div className="bg-white border-b sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3 mb-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <h1 className="text-xl font-bold">Mis Pedidos</h1>
           </div>
 
-          {order && (
-            <div className="card bg-white shadow-md border border-gray-100 rounded-2xl overflow-hidden">
-              <div className="card-body p-5">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900 mb-1">
-                      Pedido #{order.id.slice(0, 8)}
-                    </h2>
-                    <p className="text-gray-500 text-xs">
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div
-                    className={`badge badge-lg border-0 text-white font-bold ${
-                      order.estado === "completado"
-                        ? "bg-green-500"
-                        : order.estado === "cancelado"
-                          ? "bg-red-500"
-                          : "bg-amber-500"
-                    }`}
-                  >
-                    {order.estado?.toUpperCase()}
-                  </div>
-                </div>
-
-                <div className="divider my-0"></div>
-
-                <div className="space-y-4 py-4">
-                  <h3 className="font-bold flex items-center gap-2 text-gray-800">
-                    <Package className="w-5 h-5 text-primary" /> Productos
-                  </h3>
-                  <ul className="space-y-3">
-                    {order.detalles_pedido.map((detalle: any) => (
-                      <li
-                        key={detalle.id}
-                        className="flex justify-between items-center text-sm"
-                      >
-                        <div className="flex items-center gap-3">
-                            <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
-                                {detalle.cantidad}
-                            </span>
-                          <span className="text-gray-700 font-medium line-clamp-1 max-w-[160px]">
-                              {detalle.productos?.nombre || "Producto desconocido"}
-                          </span>
-                        </div>
-                        <span className="font-bold text-gray-900">${detalle.precio_unitario * detalle.cantidad}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="divider my-0"></div>
-
-                <div className="bg-gray-50 -mx-5 -mb-5 p-5">
-                    <div className="flex justify-between items-end">
-                    <div className="text-xs text-gray-500 max-w-[50%]">
-                        <p className="truncate">
-                        <span className="font-bold text-gray-700">Dirección:</span>{" "}
-                        {order.direccion_detalle}
-                        </p>
-                        <p className="truncate">
-                        <span className="font-bold text-gray-700">Cliente:</span>{" "}
-                        {order.cliente_nombre}
-                        </p>
-                    </div>
-                    <div className="text-right">
-                        <p className="text-xs text-gray-400 mb-1">
-                        Envío: ${order.total_envio}
-                        </p>
-                        <p className="text-xl font-extrabold text-primary">
-                        Total: ${order.total_productos + order.total_envio}
-                        </p>
-                    </div>
-                    </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Search bar */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Buscar por código o producto..."
+              className="input input-bordered w-full pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
       </div>
-    </MobileLayout>
+
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        {filteredOrders.length === 0 ? (
+          <div className="text-center py-12">
+            <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              {searchTerm ? "No se encontraron pedidos" : "No tienes pedidos"}
+            </h2>
+            <p className="text-gray-600 mb-6">
+              {searchTerm
+                ? "Intenta con otro término de búsqueda"
+                : "Tus pedidos aparecerán aquí"}
+            </p>
+            {!searchTerm && (
+              <button
+                onClick={() => navigate("/")}
+                className="btn btn-primary text-white"
+              >
+                Explorar Productos
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredOrders.map((order) => {
+              const statusConfig = STATUS_CONFIG[order.estado];
+              const StatusIcon = statusConfig.icon;
+
+              return (
+                <div
+                  key={order.id}
+                  className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  {/* Order header */}
+                  <div className="p-4 bg-gray-50 border-b flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-10 h-10 ${statusConfig.bgColor} rounded-full flex items-center justify-center`}
+                      >
+                        <StatusIcon className={`w-5 h-5 ${statusConfig.color}`} />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">
+                          {formatDate(order.created_at)}
+                        </p>
+                        <p className={`text-sm font-bold ${statusConfig.color}`}>
+                          {statusConfig.label}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-gray-900">
+                        {formatPrice(order.total, order.moneda)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Tracking code */}
+                  <div className="px-4 py-3 bg-blue-50 border-b border-blue-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Package className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-900">
+                          Código de Seguimiento:
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg font-bold text-blue-600 tracking-wider">
+                          {order.codigo_tracking}
+                        </span>
+                        <button
+                          onClick={() => handleCopy(order.codigo_tracking, order.id)}
+                          className="p-1.5 hover:bg-blue-100 rounded-lg transition-colors"
+                          title="Copiar código"
+                        >
+                          {copiedId === order.id ? (
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                          ) : (
+                            <Copy className="w-4 h-4 text-blue-600" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Product info */}
+                  <div className="p-4">
+                    <div className="flex gap-4">
+                      <img
+                        src={order.producto_foto || "/placeholder.png"}
+                        alt={order.producto_nombre}
+                        className="w-20 h-20 object-cover rounded-xl flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-gray-900 mb-1 truncate">
+                          {order.producto_nombre}
+                        </h3>
+                        <div className="space-y-1 text-sm text-gray-600">
+                          <p>
+                            <span className="font-medium">Cantidad:</span> {order.cantidad}
+                          </p>
+                          <p>
+                            <span className="font-medium">Precio unitario:</span>{" "}
+                            {formatPrice(order.precio_unitario, order.moneda)}
+                          </p>
+                          <p>
+                            <span className="font-medium">Envío:</span>{" "}
+                            {order.costo_envio === 0 ? (
+                              <span className="text-green-600 font-medium">Gratis</span>
+                            ) : (
+                              formatPrice(order.costo_envio, order.moneda)
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Delivery info */}
+                    <div className="mt-4 pt-4 border-t space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Cliente:</span>
+                        <span className="font-medium text-gray-900">
+                          {order.cliente_nombre}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Teléfono:</span>
+                        <span className="font-medium text-gray-900">
+                          {order.cliente_telefono}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Municipio:</span>
+                        <span className="font-medium text-gray-900">
+                          {order.municipio_nombre}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Método de pago:</span>
+                        <span className="font-medium text-gray-900">
+                          {order.metodo_pago}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -5,7 +5,6 @@
 
 :root {
   font-family: 'Outfit', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --color-primary: 26 115 232; /* Google Blue-ish */
   --rounded-box: 1rem;
   --rounded-btn: 0.5rem;
 }
@@ -13,11 +12,17 @@
 @theme {
   --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   
-  --color-primary: #1A73E8;
-  --color-primary-focus: #1557B0;
-  --color-secondary: #FF6B00; /* Vibrant Orange for accents */
-  
   --animate-bounce-slow: bounce 3s infinite;
+}
+
+/* DaisyUI Color Overrides - Darker primary for better visibility */
+[data-theme="light"] {
+  --p: 210 79% 46%; /* HSL: Darker blue #1565C0 */
+  --pf: 210 100% 35%; /* HSL: Even darker for focus #0D47A1 */
+  --pc: 0 0% 100%; /* White text on primary */
+  --s: 24 100% 50%; /* Secondary orange */
+  --sf: 24 100% 40%; /* Secondary focus */
+  --sc: 0 0% 100%; /* White text on secondary */
 }
 
 /* Custom Utilities for Hide Scrollbar but keep functionality */

@@ -4,6 +4,7 @@ import { ArrowLeft, Heart, ShoppingBag, Truck, CheckCircle2, AlertCircle, Credit
 import { useProductData } from '../hooks/useProductData';
 import { useFavorites } from '../hooks/useFavorites';
 import { useShippingCosts } from '../hooks/useShippingCosts';
+import { useCartStore } from '../store/useCartStore';
 
 // Helper to get payment icon
 const getPaymentIcon = (methodName: string) => {
@@ -26,9 +27,25 @@ export default function ProductDetailPage() {
     currentCost: shippingCost,
     loading: loadingShipping 
   } = useShippingCosts(product?.proveedor_id);
+  const { addItem, clearCart } = useCartStore();
   
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
+
+  const handleBuyNow = () => {
+    if (!product) return;
+    
+    // Clear cart and add this product
+    clearCart();
+    
+    // Add item the specified number of times
+    for (let i = 0; i < quantity; i++) {
+      addItem(product as any);
+    }
+    
+    // Navigate to checkout
+    navigate('/checkout');
+  };
 
   // Scroll to top on load/change
   React.useEffect(() => {
@@ -266,7 +283,10 @@ export default function ProductDetailPage() {
             >+</button>
          </div>
 
-         <button className="flex-1 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold py-3.5 px-6 rounded-full shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2">
+         <button 
+            onClick={handleBuyNow}
+            className="flex-1 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold py-3.5 px-6 rounded-full shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2"
+         >
              <span>Comprar ahora</span>
              <ArrowLeft className="rotate-180" size={18} />
          </button>

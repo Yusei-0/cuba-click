@@ -21,9 +21,16 @@ export function AdminProviderFormPage() {
   );
 
   const [metodosPago, setMetodosPago] = useState<any[]>([]);
-  const [selectedMetodosPago, setSelectedMetodosPago] = useState<Set<string>>(
-    new Set(),
-  );
+  const [selectedMetodosPagoByMoneda, setSelectedMetodosPagoByMoneda] = useState<{
+    CUP: Set<string>;
+    USD: Set<string>;
+    MLC: Set<string>;
+  }>({
+    CUP: new Set(),
+    USD: new Set(),
+    MLC: new Set(),
+  });
+  const [activeMonedaTab, setActiveMonedaTab] = useState<'CUP' | 'USD' | 'MLC'>('USD');
 
   const { addToast } = useToastStore();
 
@@ -69,8 +76,8 @@ export function AdminProviderFormPage() {
             (supabase.from("costos_envio") as any)
               .select("municipio_id, costo")
               .eq("proveedor_id", id),
-            (supabase.from("proveedor_metodos_pago") as any)
-              .select("metodo_pago_id")
+            (supabase.from("proveedor_moneda_metodos_pago") as any)
+              .select("metodo_pago_id, moneda")
               .eq("proveedor_id", id),
           ]);
 
@@ -83,10 +90,17 @@ export function AdminProviderFormPage() {
           }
 
           if (methodsRes.data) {
-            const methodIds = new Set(
-              methodsRes.data.map((m: any) => m.metodo_pago_id),
-            );
-            setSelectedMetodosPago(methodIds as Set<string>);
+            const methodsByMoneda = {
+              CUP: new Set<string>(),
+              USD: new Set<string>(),
+              MLC: new Set<string>(),
+            };
+            methodsRes.data.forEach((m: any) => {
+              if (m.moneda && methodsByMoneda[m.moneda as keyof typeof methodsByMoneda]) {
+                methodsByMoneda[m.moneda as keyof typeof methodsByMoneda].add(m.metodo_pago_id);
+              }
+            });
+            setSelectedMetodosPagoByMoneda(methodsByMoneda);
           }
         }
       } catch (e) {
@@ -107,14 +121,18 @@ export function AdminProviderFormPage() {
     }));
   };
 
-  const toggleMetodoPago = (metodoId: string) => {
-    const next = new Set(selectedMetodosPago);
-    if (next.has(metodoId)) {
-      next.delete(metodoId);
-    } else {
-      next.add(metodoId);
-    }
-    setSelectedMetodosPago(next);
+  const toggleMetodoPago = (moneda: 'CUP' | 'USD' | 'MLC', metodoId: string) => {
+    setSelectedMetodosPagoByMoneda(prev => {
+      const next = { ...prev };
+      const monedaSet = new Set(prev[moneda]);
+      if (monedaSet.has(metodoId)) {
+        monedaSet.delete(metodoId);
+      } else {
+        monedaSet.add(metodoId);
+      }
+      next[moneda] = monedaSet;
+      return next;
+    });
   };
 
   const onSubmit = async (data: ProviderInput) => {
@@ -155,17 +173,23 @@ export function AdminProviderFormPage() {
         }
 
         // Payment Methods: Delete all then insert selected (easiest sync)
-        await (supabase.from("proveedor_metodos_pago") as any)
+        await (supabase.from("proveedor_moneda_metodos_pago") as any)
           .delete()
           .eq("proveedor_id", providerId);
 
-        const methodsToInsert = Array.from(selectedMetodosPago).map((mid) => ({
-          proveedor_id: providerId,
-          metodo_pago_id: mid,
-        }));
+        const methodsToInsert: any[] = [];
+        (['CUP', 'USD', 'MLC'] as const).forEach(moneda => {
+          selectedMetodosPagoByMoneda[moneda].forEach(metodoId => {
+            methodsToInsert.push({
+              proveedor_id: providerId,
+              moneda: moneda,
+              metodo_pago_id: metodoId,
+            });
+          });
+        });
 
         if (methodsToInsert.length > 0) {
-          await (supabase.from("proveedor_metodos_pago") as any).insert(
+          await (supabase.from("proveedor_moneda_metodos_pago") as any).insert(
             methodsToInsert,
           );
         }
@@ -260,23 +284,42 @@ export function AdminProviderFormPage() {
           </div>
         </div>
 
-        {/* Métodos de Pago */}
+        {/* Métodos de Pago por Moneda */}
         <div className="card bg-base-100 shadow-xl border border-base-200">
           <div className="card-body">
             <h2 className="card-title text-gray-700 mb-4">
-              Métodos de Pago Aceptados
+              Métodos de Pago por Moneda
             </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Configura qué métodos de pago acepta este proveedor para cada moneda.
+            </p>
+            
+            {/* Tabs */}
+            <div role="tablist" className="tabs tabs-boxed mb-4">
+              {(['CUP', 'USD', 'MLC'] as const).map(moneda => (
+                <a
+                  key={moneda}
+                  role="tab"
+                  className={`tab font-semibold ${activeMonedaTab === moneda ? 'tab-active' : ''}`}
+                  onClick={() => setActiveMonedaTab(moneda)}
+                >
+                  {moneda}
+                </a>
+              ))}
+            </div>
+
+            {/* Content for active tab */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {metodosPago.map((metodo) => (
                 <label
                   key={metodo.id}
-                  className="label cursor-pointer justify-start gap-3 border rounded p-2 hover:bg-base-200 transition-colors"
+                  className="label cursor-pointer justify-start gap-3 border rounded-lg p-3 hover:bg-base-200 transition-colors"
                 >
                   <input
                     type="checkbox"
                     className="checkbox checkbox-primary"
-                    checked={selectedMetodosPago.has(metodo.id)}
-                    onChange={() => toggleMetodoPago(metodo.id)}
+                    checked={selectedMetodosPagoByMoneda[activeMonedaTab].has(metodo.id)}
+                    onChange={() => toggleMetodoPago(activeMonedaTab, metodo.id)}
                   />
                   <span className="label-text font-medium">
                     {metodo.nombre}
@@ -284,7 +327,7 @@ export function AdminProviderFormPage() {
                 </label>
               ))}
               {metodosPago.length === 0 && (
-                <p className="text-gray-500 italic">
+                <p className="text-gray-500 italic col-span-3">
                   No hay métodos de pago configurados en el sistema.
                 </p>
               )}

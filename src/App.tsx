@@ -34,6 +34,7 @@ function App() {
         <Route path="/carrito" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/pedidos" element={<OrdersPage />} />
+        <Route path="/orders" element={<OrdersPage />} />
         <Route path="/producto/:slug" element={<ProductDetailPage />} />
         <Route path="/p/:slug" element={<ProductDetailPage />} />
         <Route path="/favoritos" element={<FavoritesPage />} />
