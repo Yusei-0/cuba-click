@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import type { Database } from "../types/database.types";
 import { ProductCard } from "../components/ui/ProductCard";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Outlet } from "react-router-dom";
 import { MobileLayout } from "../components/layout/MobileLayout";
 import { Header } from "../components/layout/Header";
 import { SearchBar } from "../components/ui/SearchBar";
@@ -100,7 +100,8 @@ export function HomePage() {
   // if (loading) { ... }
 
   return (
-    <MobileLayout>
+    <>
+      <MobileLayout>
       <div className="bg-white min-h-screen pb-4">
         {/* Header - Always visible */}
         <Header />
@@ -182,5 +183,9 @@ export function HomePage() {
         </div>
       </div>
     </MobileLayout>
+    
+    {/* Outlet for nested modal routes */}
+    <Outlet />
+  </>
   );
 }

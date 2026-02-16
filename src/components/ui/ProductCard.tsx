@@ -20,8 +20,9 @@ export function ProductCard({ product, variant = "default" }: ProductCardProps) 
   const isCatalog = variant === "catalog";
   const isInCatalog = location.pathname.startsWith('/catalogo');
   
-  // Use relative path if in catalog, absolute otherwise
-  const productPath = (isCatalog && isInCatalog) 
+  // Always use modal navigation when in catalog context
+  // Use relative path for modal, absolute for standalone page
+  const productPath = isInCatalog 
     ? `producto/${product.id}` 
     : `/producto/${product.id}`;
 

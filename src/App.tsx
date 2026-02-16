@@ -28,10 +28,19 @@ function App() {
       <Routes>
         {/* Public Routes */}
         {/* Public Routes with Main Layout */}
-        <Route path="/" element={<HomePage />} />
+        
+        {/* Home with nested modal route */}
+        <Route path="/" element={<HomePage />}>
+          <Route path="producto/:slug" element={<ProductDetailModal />} />
+        </Route>
         
         {/* Catalog with nested modal route */}
         <Route path="/catalogo" element={<CatalogPage />}>
+          <Route path="producto/:slug" element={<ProductDetailModal />} />
+        </Route>
+        
+        {/* Favorites with nested modal route */}
+        <Route path="/favoritos" element={<FavoritesPage />}>
           <Route path="producto/:slug" element={<ProductDetailModal />} />
         </Route>
         

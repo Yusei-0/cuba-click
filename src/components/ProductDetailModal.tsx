@@ -93,7 +93,7 @@ export function ProductDetailModal() {
       />
 
       {/* Modal Content */}
-      <div className={`relative w-full h-[95vh] bg-gray-50 rounded-t-[30px] overflow-hidden ${isClosing ? 'modal-slide-down' : 'modal-slide-up'}`}>
+      <div className={`relative w-full h-[95dvh] max-h-[95vh] bg-gray-50 rounded-t-[30px] overflow-hidden ${isClosing ? 'modal-slide-down' : 'modal-slide-up'}`}>
         {loading || !product ? (
           // Skeleton
           <div className="h-full animate-pulse">
@@ -109,28 +109,33 @@ export function ProductDetailModal() {
             </div>
           </div>
         ) : (
-          <div className="h-full overflow-y-auto no-scrollbar">
-            {/* Close Button */}
-            <button 
-              onClick={handleClose}
-              className="fixed top-4 right-4 z-50 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all"
-            >
-              <X size={20} className="text-gray-800" />
-            </button>
+          <div className="h-full overflow-y-auto no-scrollbar relative">
+            {/* Sticky Button Container - stays within scrollable area */}
+            <div className="sticky top-0 left-0 right-0 z-50 pointer-events-none">
+              <div className="flex justify-between items-start p-4">
+                {/* Favorite Button */}
+                <button 
+                  onClick={() => toggleFavorite(product.id)}
+                  className="w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all pointer-events-auto"
+                >
+                  <Heart 
+                    size={20} 
+                    className={isFavorite(product.id) ? "fill-red-500 text-red-500" : "text-gray-800"} 
+                  />
+                </button>
 
-            {/* Favorite Button */}
-            <button 
-              onClick={() => toggleFavorite(product.id)}
-              className="fixed top-4 left-4 z-50 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all"
-            >
-              <Heart 
-                size={20} 
-                className={isFavorite(product.id) ? "fill-red-500 text-red-500" : "text-gray-800"} 
-              />
-            </button>
+                {/* Close Button */}
+                <button 
+                  onClick={handleClose}
+                  className="w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all pointer-events-auto"
+                >
+                  <X size={20} className="text-gray-800" />
+                </button>
+              </div>
+            </div>
 
-            {/* Image */}
-            <div className="relative w-full h-[50vh] bg-white flex items-center justify-center overflow-hidden">
+            {/* Image - Taller for better product visibility */}
+            <div className="relative w-full h-[60vh] bg-white flex items-center justify-center overflow-hidden -mt-[72px]">
               {product.foto_url ? (
                 <img 
                   src={product.foto_url} 
