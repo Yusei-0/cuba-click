@@ -7,7 +7,7 @@ import {
   ArrowLeft,
   CheckCircle,
   MapPin,
-  Phone,
+
   User,
   CreditCard,
   Truck,

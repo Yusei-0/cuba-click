@@ -1,10 +1,9 @@
-import { ShoppingCart, Menu, Search, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useCartStore } from "../../store/useCartStore";
 import { useState } from "react";
 
 export function Navbar() {
-  const cartTotalItems = useCartStore((state) => state.totalItems());
+
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (

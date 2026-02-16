@@ -253,7 +253,7 @@ export function CatalogPage({ categoryIdOverride }: CatalogPageProps) {
         ) : products.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} variant="catalog" />
             ))}
           </div>
         ) : (

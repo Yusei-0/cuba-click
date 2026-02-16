@@ -1,14 +1,15 @@
+
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
-import { Database } from "../../types/database.types";
+import type { Database } from "../../types/database.types";
 import {
   ChevronDown,
   ChevronUp,
   Package,
   User,
   MapPin,
-  Search,
+
+  DollarSign,
 } from "lucide-react";
 
 type Order = Database["public"]["Tables"]["pedidos"]["Row"] & {
@@ -59,8 +60,7 @@ export function AdminOrdersPage() {
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
-      const { error } = await supabase
-        .from("pedidos")
+      const { error } = await (supabase.from("pedidos") as any)
         .update({ estado: newStatus })
         .eq("id", id);
       if (error) throw error;

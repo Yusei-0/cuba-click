@@ -99,6 +99,7 @@ export interface Database {
           id: string;
           nombre: string;
           descripcion: string | null;
+          descripcion_corta: string | null;
           precio_costo: number;
           precio_final: number;
           foto_url: string | null;
@@ -112,6 +113,7 @@ export interface Database {
           id?: string;
           nombre: string;
           descripcion?: string | null;
+          descripcion_corta?: string | null;
           precio_costo: number;
           precio_final: number;
           foto_url?: string | null;
@@ -125,6 +127,7 @@ export interface Database {
           id?: string;
           nombre?: string;
           descripcion?: string | null;
+          descripcion_corta?: string | null;
           precio_costo?: number;
           precio_final?: number;
           foto_url?: string | null;

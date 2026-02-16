@@ -17,7 +17,7 @@ import { AdminCategoriesPage } from "./pages/admin/categories/AdminCategoriesPag
 import { AdminCategoryFormPage } from "./pages/admin/categories/AdminCategoryFormPage";
 import { AdminProvidersPage } from "./pages/admin/providers/AdminProvidersPage";
 import { AdminProviderFormPage } from "./pages/admin/providers/AdminProviderFormPage";
-import { ToastContainer } from "./components/ui/ToastContainer";
+
 import { CategoryResolver } from "./pages/CategoryResolver";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
@@ -26,6 +26,9 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* Public Routes */}
+        {/* Public Routes with Main Layout */}
+        <Route path="/" element={<HomePage />} />
+        
         <Route
           element={
             <Layout>
@@ -35,11 +38,6 @@ function App() {
             </Layout>
           }
         >
-          {" "}
-          {/* Minor adjustment: Layout expects children, Outlet works fine. Wait, Layout has structure. */}
-          {/* Actually Layout handles the full page structure. Let's see Layout.tsx again. Layout wraps children in main. Perfect. */}
-          {/* We need to pass Outlet as children to Layout. */}
-          <Route path="/" element={<HomePage />} />
           <Route path="/catalogo" element={<CatalogPage />} />
           <Route path="/producto/:id" element={<ProductPage />} />
           <Route path="/cart" element={<CartPage />} />
