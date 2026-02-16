@@ -26,7 +26,7 @@ export function HomePage() {
     try {
         const { data, error } = await supabase
             .from("categorias")
-            .select("*")
+            .select("*, productos!inner(id)")
             .range(from, to)
             .order("nombre");
         
@@ -110,7 +110,7 @@ export function HomePage() {
 
 
           {/* Search */}
-          <div className="px-4">
+          <div className="px-4 mt-4">
             <SearchBar onSearch={(q) => console.log(q)} />
           </div>
 

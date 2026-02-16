@@ -29,25 +29,16 @@ function App() {
         {/* Public Routes with Main Layout */}
         <Route path="/" element={<HomePage />} />
         
-        <Route
-          element={
-            <Layout>
-              <main className="min-h-screen">
-                <Outlet />
-              </main>
-            </Layout>
-          }
-        >
-          <Route path="/catalogo" element={<CatalogPage />} />
-          <Route path="/producto/:id" element={<ProductPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/pedidos" element={<OrdersPage />} />
-          {/* Dynamic Category Route & 404 */}
-          {/* We place this last to avoid intercepting other routes */}
-          <Route path="/:categoryName" element={<CategoryResolver />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
+        <Route path="/catalogo" element={<CatalogPage />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/carrito" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/pedidos" element={<OrdersPage />} />
+        <Route path="/producto/:id" element={<ProductPage />} />
+        
+        {/* Dynamic Category Route & 404 */}
+        <Route path="/:categoryName" element={<CategoryResolver />} />
+        <Route path="*" element={<NotFoundPage />} />
 
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLoginPage />} />

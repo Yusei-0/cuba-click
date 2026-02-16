@@ -22,8 +22,8 @@ export function ProductCard({ product, variant = "default" }: ProductCardProps) 
   const isCatalog = variant === "catalog";
 
   return (
-    <div className={`card bg-white shadow-sm hover:shadow-md transition-all duration-300 rounded-3xl overflow-hidden group p-3 border border-gray-100 ${isCatalog ? 'h-full flex flex-col' : ''}`}>
-      <div className="relative rounded-2xl overflow-hidden bg-gray-50 aspect-square mb-2">
+    <div className={`card bg-white shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl overflow-hidden group p-3 border border-gray-100 ${isCatalog ? 'h-full flex flex-col' : ''}`}>
+      <div className="relative rounded-xl overflow-hidden bg-gray-50 aspect-square mb-2">
         {product.foto_url ? (
           <img
             src={product.foto_url}
@@ -82,10 +82,10 @@ export function ProductCard({ product, variant = "default" }: ProductCardProps) 
 
         <div className="mt-auto pt-2">
             <button
-              className={`btn w-full rounded-xl text-xs font-semibold h-10 min-h-0 shadow-sm border-none z-20 relative
+              className={`btn w-full rounded-xl text-sm font-bold h-12 shadow-none border-none z-20 relative
                 ${isCatalog 
                     ? 'btn-ghost bg-blue-50 text-blue-600 hover:bg-blue-100' 
-                    : 'btn-primary bg-blue-600 hover:bg-blue-700 text-white hover:shadow-md'
+                    : 'btn-primary bg-blue-600 hover:bg-blue-700 text-white'
                 }`}
               onClick={(e) => {
                 e.preventDefault();
