@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import type { Database } from "../../types/database.types";
-import { useCartStore } from "../../store/useCartStore";
 import { formatPrice } from "../../lib/utils";
 import { CheckCircle2 } from "lucide-react";
 
@@ -12,8 +11,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, variant = "default" }: ProductCardProps) {
-  const { addItem } = useCartStore();
-  
   const hasWarranty = product.garantia_dias > 0; 
   const displayWarranty = product.garantia_dias >= 30 
     ? `${Math.floor(product.garantia_dias / 30)}m` 
@@ -81,19 +78,16 @@ export function ProductCard({ product, variant = "default" }: ProductCardProps) 
         )}
 
         <div className="mt-auto pt-2">
-            <button
-              className={`btn w-full rounded-xl text-base font-bold min-h-0 h-10 shadow-none border-none z-20 relative
+            <Link
+              to={`/producto/${product.id}`}
+              className={`btn w-full rounded-xl text-base font-bold min-h-0 h-10 shadow-none border-none z-20 relative flex items-center justify-center no-underline
                 ${isCatalog 
                     ? 'btn-ghost bg-blue-50 text-blue-600 hover:bg-blue-100' 
                     : 'btn-primary bg-blue-600 hover:bg-blue-700 text-white'
                 }`}
-              onClick={(e) => {
-                e.preventDefault();
-                addItem(product);
-              }}
             >
               {isCatalog ? 'Ver detalles' : 'Ver producto'}
-            </button>
+            </Link>
         </div>
       </div>
       
