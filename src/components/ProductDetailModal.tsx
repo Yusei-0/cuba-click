@@ -1,6 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { X, Heart, Truck, CheckCircle2, AlertCircle, CreditCard, Banknote, Landmark, Smartphone, ArrowLeft } from 'lucide-react';
+import { 
+  X, 
+  Heart, 
+  Truck, 
+  CheckCircle2, 
+  AlertCircle, 
+  CreditCard, 
+  Banknote, 
+  Landmark, 
+  Smartphone, 
+  ArrowLeft,
+  ShoppingCart,
+  Minus,
+  Plus
+} from 'lucide-react';
+import { CustomSelect } from "./ui/CustomSelect";
 import { useProductData } from '../hooks/useProductData';
 import { useFavorites } from '../hooks/useFavorites';
 import { useShippingCosts } from '../hooks/useShippingCosts';
@@ -200,17 +215,14 @@ export function ProductDetailModal() {
                 </div>
                 
                 <div className="flex flex-col gap-3">
-                  <select 
-                    className="select select-bordered select-sm w-full bg-white text-gray-700 focus:outline-none focus:border-blue-500"
+                  <CustomSelect
                     value={selectedMunicipio}
-                    onChange={(e) => setSelectedMunicipio(e.target.value)}
+                    onChange={setSelectedMunicipio}
+                    options={municipios.map(m => ({ value: m.id, label: m.nombre }))}
+                    placeholder="Selecciona tu municipio"
                     disabled={loadingShipping}
-                  >
-                    <option value="">Selecciona tu municipio</option>
-                    {municipios.map(m => (
-                      <option key={m.id} value={m.id}>{m.nombre}</option>
-                    ))}
-                  </select>
+                    className="w-full"
+                  />
 
                   <div className="flex justify-between items-center px-1">
                     <span className="text-sm text-gray-500">Costo estimado:</span>

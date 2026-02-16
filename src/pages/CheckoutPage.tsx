@@ -18,7 +18,12 @@ import {
   Plus,
   Smartphone,
   Landmark,
+  Truck,
+  CheckCircle,
+  AlertCircle,
+  ChevronDown,
 } from "lucide-react";
+import { CustomSelect } from "../components/ui/CustomSelect";
 import { useToastStore } from "../store/useToastStore";
 import { formatPrice } from "../lib/utils";
 import { OrderSuccessModal } from "../components/OrderSuccessModal";
@@ -330,30 +335,19 @@ export function CheckoutPage() {
               />
             </div>
 
-            {/* Municipio */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Municipio
-              </label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                <select
-                  className="select select-bordered w-full pl-10"
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Municipio
+                </label>
+                <CustomSelect
                   value={formData.municipio_id}
-                  onChange={(e) =>
-                    setFormData({ ...formData, municipio_id: e.target.value })
-                  }
+                  onChange={(val) => setFormData({ ...formData, municipio_id: val })}
+                  options={municipios.map(m => ({ value: m.id, label: m.nombre }))}
+                  placeholder="Selecciona tu municipio"
+                  icon={<MapPin className="w-5 h-5" />}
                   required
-                >
-                  <option value="">Seleccionar...</option>
-                  {municipios.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.nombre}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
-            </div>
 
             {/* Dirección de Entrega */}
             <div>
