@@ -87,7 +87,7 @@ export function CategoryList({
                 selectedCategory === cat.id ? "text-blue-600 font-bold" : "text-gray-600"
               }`}
             >
-              {cat.nombre.split(" ")[0]}
+              {cat.nombre}
             </span>
           </button>
         ))}

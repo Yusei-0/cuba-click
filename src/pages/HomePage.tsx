@@ -86,7 +86,12 @@ export function HomePage() {
 
   const handleCategorySelect = (id: string) => {
     setSelectedCategory(id);
-    navigate(`/catalogo?categoria=${id}`);
+    const category = categories.find((c) => c.id === id);
+    if (category?.slug) {
+      navigate(`/categorias/${category.slug}`);
+    } else {
+      navigate(`/catalogo?categoria=${id}`);
+    }
   };
 
   if (loading) {
@@ -111,7 +116,7 @@ export function HomePage() {
 
           {/* Search */}
           <div className="px-4 mt-4">
-            <SearchBar onSearch={(q) => console.log(q)} />
+            <SearchBar onSearch={(q) => navigate(`/catalogo?busqueda=${encodeURIComponent(q)}`)} />
           </div>
 
           {/* Categories */}

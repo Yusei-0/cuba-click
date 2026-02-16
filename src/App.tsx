@@ -1,5 +1,4 @@
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
-import { Layout } from "./components/layout/Layout";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
 import { CatalogPage } from "./pages/CatalogPage";
 import { ProductPage } from "./pages/ProductPage";
@@ -37,6 +36,7 @@ function App() {
         <Route path="/producto/:id" element={<ProductPage />} />
         
         {/* Dynamic Category Route & 404 */}
+        <Route path="/categorias/:categoryName" element={<CategoryResolver />} />
         <Route path="/:categoryName" element={<CategoryResolver />} />
         <Route path="*" element={<NotFoundPage />} />
 

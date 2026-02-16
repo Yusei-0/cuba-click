@@ -56,7 +56,7 @@ export function ProductCard({ product, variant = "default" }: ProductCardProps) 
         </div>
       </div>
       
-      <div className={`flex flex-col gap-1 px-1 ${isCatalog ? 'grow' : ''}`}>
+      <div className={`flex flex-col gap-1 ${isCatalog ? 'grow' : 'px-1'}`}>
         <h2 className="font-bold text-sm text-gray-900 line-clamp-2 leading-tight min-h-[2.5em]">
           {product.nombre}
         </h2>
@@ -82,7 +82,7 @@ export function ProductCard({ product, variant = "default" }: ProductCardProps) 
 
         <div className="mt-auto pt-2">
             <button
-              className={`btn w-full rounded-xl text-sm font-bold h-12 shadow-none border-none z-20 relative
+              className={`btn w-full rounded-xl text-base font-bold min-h-0 h-10 shadow-none border-none z-20 relative
                 ${isCatalog 
                     ? 'btn-ghost bg-blue-50 text-blue-600 hover:bg-blue-100' 
                     : 'btn-primary bg-blue-600 hover:bg-blue-700 text-white'

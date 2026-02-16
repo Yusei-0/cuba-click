@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import type { Database } from "../types/database.types";
 import { ProductCard } from "../components/ui/ProductCard";
@@ -14,10 +14,12 @@ type Category = Database["public"]["Tables"]["categorias"]["Row"];
 
 interface CatalogPageProps {
   categoryIdOverride?: string;
+  categoryNameOverride?: string;
 }
 
-export function CatalogPage({ categoryIdOverride }: CatalogPageProps) {
+export function CatalogPage({ categoryIdOverride, categoryNameOverride }: CatalogPageProps) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   // If override is present, use it, UNLESS search params are explicitly set (navigation within the page)
   // Actually, simpler: searchParam takes precedence if it exists (user clicked something),
   // otherwise fallback to override.
@@ -71,13 +73,18 @@ export function CatalogPage({ categoryIdOverride }: CatalogPageProps) {
   }, [categoryId, searchQuery]);
 
   const handleCategoryChange = (id: string | null) => {
-    const newParams = new URLSearchParams(searchParams);
     if (id) {
-      newParams.set("categoria", id);
+       const category = categories.find((c) => c.id === id);
+       if (category?.slug) {
+          navigate(`/categorias/${category.slug}`);
+       } else {
+          const newParams = new URLSearchParams(searchParams);
+          newParams.set("categoria", id);
+          setSearchParams(newParams);
+       }
     } else {
-      newParams.delete("categoria");
+      navigate("/catalogo");
     }
-    setSearchParams(newParams);
     setShowMobileFilters(false); // Close mobile menu on selection
   };
 
@@ -101,11 +108,33 @@ export function CatalogPage({ categoryIdOverride }: CatalogPageProps) {
 
   const activeFiltersCount = (categoryId ? 1 : 0) + (searchQuery ? 1 : 0);
 
+  // Determine page title
+  // Priority: 
+  // 1. Resolved Name from prop (categoryNameOverride) IF we are using the override ID (no query param)
+  // 2. Name from category list (if found)
+  // 3. Default "Productos"
+  const getPageTitle = () => {
+     if (categoryId && categoryId === categoryIdOverride && categoryNameOverride) {
+         return categoryNameOverride;
+     }
+     if (categoryId) {
+         return categories.find((c) => c.id === categoryId)?.nombre || "Productos";
+     }
+     return "Todos los productos";
+  };
+
   return (
     <MobileLayout>
       <div className="bg-white min-h-screen pb-4">
         <Header />
         <div className="flex flex-col md:flex-row gap-6 p-4">
+          {/* Mobile Category Title */}
+          <div className="md:hidden mb-1 px-1">
+            <h1 className="text-3xl font-extrabold text-gray-900 capitalize tracking-tight">
+              {getPageTitle()}
+            </h1>
+          </div>
+
           {/* Mobile Filter Toggle */}
           <div className="md:hidden flex gap-2 mb-2">
             <form onSubmit={handleSearchSubmit} className="grow relative">
@@ -216,31 +245,32 @@ export function CatalogPage({ categoryIdOverride }: CatalogPageProps) {
           <div className="grow">
             <div className="hidden md:flex mb-6 justify-between items-center">
               <h2 className="text-2xl font-bold">
-                {categoryId
-                  ? categories.find((c) => c.id === categoryId)?.nombre ||
-                    "Productos"
-                  : "Todos los productos"}
+                {getPageTitle()}
                 {searchQuery && (
                   <span className="text-gray-500 font-normal ml-2 text-lg">
                     Resultados para "{searchQuery}"
                   </span>
                 )}
               </h2>
+
               <span className="text-sm text-gray-500">
                 {products.length} resultados
               </span>
             </div>
 
             {/* Mobile Filter Summary Line */}
-            <div className="md:hidden flex justify-between items-center mb-4 px-1">
+            <div className="md:hidden flex justify-between items-center mb-4 px-1 min-h-[32px]">
               <span className="text-sm text-gray-500 font-medium">
                 {products.length} resultados
               </span>
               {activeFiltersCount > 0 && (
-                <div className="badge badge-primary gap-1">
-                  {activeFiltersCount} Filtros
-                  <X className="w-3 h-3 cursor-pointer" onClick={clearFilters} />
-                </div>
+                <button 
+                  onClick={clearFilters}
+                  className="btn btn-xs btn-error btn-outline gap-1 rounded-full normal-case font-medium"
+                >
+                  <X className="w-3 h-3" />
+                  Limpiar filtros ({activeFiltersCount})
+                </button>
               )}
             </div>
 

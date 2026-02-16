@@ -8,6 +8,7 @@ export function CategoryResolver() {
   const { categoryName } = useParams();
   const [loading, setLoading] = useState(true);
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [resolvedCategoryName, setResolvedCategoryName] = useState<string | undefined>(undefined);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
@@ -19,26 +20,41 @@ export function CategoryResolver() {
       }
 
       try {
-        // Try to match by name (case insensitive)
+        // 1. Try to match by slug (exact match)
+        const { data: dataSlug, error: errorSlug } = await (supabase.from("categorias") as any)
+          .select("id, nombre, slug")
+          .eq("slug", categoryName)
+          .maybeSingle();
+
+        if (dataSlug) {
+           setCategoryId(dataSlug.id);
+           setResolvedCategoryName(dataSlug.nombre);
+           return;
+        }
+
+        // 2. Fallback: Try to match by name (case insensitive) for backward compatibility
         const { data, error } = await (supabase.from("categorias") as any)
-          .select("id")
+          .select("id, nombre")
           .ilike("nombre", categoryName.replace(/-/g, " ")) // handle dashes as spaces potentially
           .maybeSingle();
 
         if (error || !data) {
-          // Try exact match just in case
+          // 3. Last resort: Try exact match just in case
           const { data: data2 } = await (supabase.from("categorias") as any)
-            .select("id")
+            .select("id, nombre")
             .eq("nombre", categoryName)
             .maybeSingle();
 
           if (data2) {
             setCategoryId(data2.id);
+            setResolvedCategoryName(data2.nombre);
           } else {
+            console.log("Category not found for:", categoryName);
             setNotFound(true);
           }
         } else {
           setCategoryId(data.id);
+          setResolvedCategoryName(data.nombre);
         }
       } catch (err) {
         console.error("Error resolving category:", err);
@@ -63,5 +79,5 @@ export function CategoryResolver() {
     return <NotFoundPage />;
   }
 
-  return <CatalogPage categoryIdOverride={categoryId} />;
+  return <CatalogPage categoryIdOverride={categoryId} categoryNameOverride={resolvedCategoryName} />;
 }

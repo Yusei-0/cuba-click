@@ -84,14 +84,20 @@ export interface Database {
         Row: {
           id: string;
           nombre: string;
+          slug: string;
+          icono?: string | null;
         };
         Insert: {
           id?: string;
           nombre: string;
+          slug?: string;
+          icono?: string | null;
         };
         Update: {
           id?: string;
           nombre?: string;
+          slug?: string;
+          icono?: string | null;
         };
       };
       productos: {
