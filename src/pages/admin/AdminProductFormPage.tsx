@@ -16,6 +16,8 @@ export function AdminProductFormPage() {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [providers, setProviders] = useState<any[]>([]);
+  const [municipios, setMunicipios] = useState<any[]>([]);
+  const [selectedMunicipios, setSelectedMunicipios] = useState<string[]>([]);
   const { uploadImage, uploading: uploadingImage } = useImageUpload();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { addToast } = useToastStore();
@@ -37,12 +39,14 @@ export function AdminProductFormPage() {
 
   useEffect(() => {
     async function loadDependencies() {
-      const [catRes, provRes] = await Promise.all([
+      const [catRes, provRes, munRes] = await Promise.all([
         (supabase.from("categorias") as any).select("*"),
         (supabase.from("proveedores") as any).select("*"),
+        (supabase.from("municipios") as any).select("*").order("nombre"),
       ]);
       if (catRes.data) setCategories(catRes.data);
       if (provRes.data) setProviders(provRes.data);
+      if (munRes.data) setMunicipios(munRes.data);
     }
     loadDependencies();
 
@@ -59,10 +63,28 @@ export function AdminProductFormPage() {
             setValue(key as any, data[key]);
           });
           if (data.foto_url) setPreviewImage(data.foto_url);
+          
+          // Ensure moneda has a default value
+          if (!data.moneda) {
+            setValue("moneda", "USD");
+          }
         }
+        
+        // Load selected municipios
+        const { data: munData } = await (supabase.from("producto_municipios") as any)
+          .select("municipio_id")
+          .eq("producto_id", id);
+        if (munData) {
+          setSelectedMunicipios(munData.map((m: any) => m.municipio_id));
+        }
+        
         setLoading(false);
       }
       loadProduct();
+    } else {
+      // Set default values for new products
+      setValue("moneda", "USD");
+      setValue("activo", true);
     }
   }, [id, isEditing, setValue]);
 
@@ -80,17 +102,39 @@ export function AdminProductFormPage() {
   const onSubmit = async (data: ProductInput) => {
     setLoading(true);
     try {
+      let productId = id;
+      
       if (isEditing && id) {
         const { error } = await (supabase.from("productos") as any)
           .update(data)
           .eq("id", id);
         if (error) throw error;
       } else {
-        const { error } = await (supabase.from("productos") as any).insert(
-          data,
-        );
+        const { data: newProduct, error } = await (supabase.from("productos") as any)
+          .insert(data)
+          .select()
+          .single();
         if (error) throw error;
+        productId = newProduct.id;
       }
+      
+      // Update producto_municipios
+      if (productId) {
+        // Delete existing relations
+        await (supabase.from("producto_municipios") as any)
+          .delete()
+          .eq("producto_id", productId);
+        
+        // Insert new relations
+        if (selectedMunicipios.length > 0) {
+          const relations = selectedMunicipios.map(munId => ({
+            producto_id: productId,
+            municipio_id: munId
+          }));
+          await (supabase.from("producto_municipios") as any).insert(relations);
+        }
+      }
+      
       navigate("/admin/productos");
       addToast("Producto guardado exitosamente", "success");
     } catch (error) {
@@ -148,6 +192,19 @@ export function AdminProductFormPage() {
 
               <div className="form-control mt-4">
                 <label className="label font-medium text-gray-600">
+                  Descripción Corta
+                </label>
+                <input
+                  type="text"
+                  className="input input-bordered w-full focus:input-primary"
+                  placeholder="Breve resumen del producto (máx. 100 caracteres)"
+                  maxLength={100}
+                  {...register("descripcion_corta")}
+                />
+              </div>
+
+              <div className="form-control mt-4">
+                <label className="label font-medium text-gray-600">
                   Descripción
                 </label>
                 <textarea
@@ -164,7 +221,7 @@ export function AdminProductFormPage() {
               <h2 className="card-title text-gray-700 mb-4">
                 Precios y Garantía
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div className="form-control">
                   <label className="label font-medium text-gray-600">
                     Precio Costo
@@ -203,6 +260,22 @@ export function AdminProductFormPage() {
                     />
                   </div>
                 </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="form-control">
+                  <label className="label font-medium text-gray-600">
+                    Moneda
+                  </label>
+                  <select
+                    className="select select-bordered w-full focus:select-primary"
+                    value={watch("moneda") || "USD"}
+                    {...register("moneda")}
+                  >
+                    <option value="USD">USD (Dólares)</option>
+                    <option value="CUP">CUP (Pesos Cubanos)</option>
+                    <option value="EUR">EUR (Euros)</option>
+                  </select>
+                </div>
                 <div className="form-control">
                   <label className="label font-medium text-gray-600">
                     Garantía (días)
@@ -227,6 +300,7 @@ export function AdminProductFormPage() {
                   </label>
                   <select
                     className="select select-bordered w-full focus:select-primary"
+                    value={watch("categoria_id") || ""}
                     {...register("categoria_id")}
                   >
                     <option value="">Seleccionar Categoría...</option>
@@ -243,6 +317,7 @@ export function AdminProductFormPage() {
                   </label>
                   <select
                     className="select select-bordered w-full focus:select-primary"
+                    value={watch("proveedor_id") || ""}
                     {...register("proveedor_id")}
                   >
                     <option value="">Seleccionar Proveedor...</option>
@@ -254,6 +329,50 @@ export function AdminProductFormPage() {
                   </select>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div className="card bg-base-100 shadow-xl border border-base-200">
+            <div className="card-body">
+              <h2 className="card-title text-gray-700 mb-2">Restricciones de Entrega</h2>
+              <div className="alert alert-info mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <div className="text-sm">
+                  <p className="font-semibold">¿Cómo funciona?</p>
+                  <ul className="list-disc list-inside mt-1 space-y-1">
+                    <li><strong>Sin selección</strong>: El producto se entrega en TODOS los municipios del proveedor</li>
+                    <li><strong>Con selección</strong>: El producto SOLO se entrega en los municipios marcados</li>
+                  </ul>
+                </div>
+              </div>
+              <div className="max-h-64 overflow-y-auto border border-base-200 rounded-lg p-3">
+                {municipios.length === 0 ? (
+                  <p className="text-gray-400 text-center py-4">Cargando municipios...</p>
+                ) : (
+                  municipios.map((mun) => (
+                    <label key={mun.id} className="cursor-pointer label justify-start gap-3 py-2 hover:bg-base-200 rounded transition-colors">
+                      <input
+                        type="checkbox"
+                        className="checkbox checkbox-primary checkbox-sm"
+                        checked={selectedMunicipios.includes(mun.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedMunicipios([...selectedMunicipios, mun.id]);
+                          } else {
+                            setSelectedMunicipios(selectedMunicipios.filter(id => id !== mun.id));
+                          }
+                        }}
+                      />
+                      <span className="label-text">{mun.nombre}</span>
+                    </label>
+                  ))
+                )}
+              </div>
+              {selectedMunicipios.length > 0 && (
+                <div className="mt-3 text-sm text-gray-600">
+                  <strong>{selectedMunicipios.length}</strong> municipio(s) seleccionado(s)
+                </div>
+              )}
             </div>
           </div>
         </div>

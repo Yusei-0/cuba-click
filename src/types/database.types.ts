@@ -114,6 +114,7 @@ export interface Database {
           proveedor_id: string | null;
           activo: boolean;
           created_at: string;
+          moneda: string;
         };
         Insert: {
           id?: string;
@@ -128,6 +129,7 @@ export interface Database {
           proveedor_id?: string | null;
           activo?: boolean;
           created_at?: string;
+          moneda?: string;
         };
         Update: {
           id?: string;
@@ -142,6 +144,21 @@ export interface Database {
           proveedor_id?: string | null;
           activo?: boolean;
           created_at?: string;
+          moneda?: string;
+        };
+      };
+      producto_municipios: {
+        Row: {
+          producto_id: string;
+          municipio_id: string;
+        };
+        Insert: {
+          producto_id: string;
+          municipio_id: string;
+        };
+        Update: {
+          producto_id?: string;
+          municipio_id?: string;
         };
       };
       monedas: {
@@ -180,6 +197,7 @@ export interface Database {
           id: string;
           cliente_nombre: string;
           cliente_telefono: string;
+          cliente_ci: string | null;
           municipio_id: string | null;
           direccion_detalle: string;
           moneda_id: string | null;
@@ -194,6 +212,7 @@ export interface Database {
           id?: string;
           cliente_nombre: string;
           cliente_telefono: string;
+          cliente_ci?: string | null;
           municipio_id?: string | null;
           direccion_detalle: string;
           moneda_id?: string | null;
@@ -208,6 +227,7 @@ export interface Database {
           id?: string;
           cliente_nombre?: string;
           cliente_telefono?: string;
+          cliente_ci?: string | null;
           municipio_id?: string | null;
           direccion_detalle?: string;
           moneda_id?: string | null;

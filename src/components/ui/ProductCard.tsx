@@ -47,7 +47,7 @@ export function ProductCard({ product, variant = "default" }: ProductCardProps) 
             {/* Price Badge - Only for Default (Home) */}
             {!isCatalog && (
                 <div className="bg-white text-gray-900 text-xs font-bold px-2 py-1 rounded-lg shadow-sm ml-auto">
-                    {formatPrice(product.precio_final)}
+                    {formatPrice(product.precio_final)} {product.moneda || 'USD'}
                 </div>
             )}
         </div>
@@ -66,7 +66,7 @@ export function ProductCard({ product, variant = "default" }: ProductCardProps) 
                  </p>
                  <p className="text-lg font-bold text-blue-600">
                     {formatPrice(product.precio_final)} 
-                    <span className="text-xs font-normal text-gray-400 ml-1">USD</span>
+                    <span className="text-xs font-normal text-gray-400 ml-1">{product.moneda || 'USD'}</span>
                  </p>
             </div>
         )}

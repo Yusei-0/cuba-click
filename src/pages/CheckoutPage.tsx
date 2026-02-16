@@ -31,6 +31,7 @@ export function CheckoutPage() {
   const [formData, setFormData] = useState({
     nombre: "",
     telefono: "",
+    cliente_ci: "",
     municipio_id: "",
     direccion: "",
     metodo_pago_id: "",
@@ -134,11 +135,12 @@ export function CheckoutPage() {
       const orderData = {
         cliente_nombre: formData.nombre,
         cliente_telefono: formData.telefono,
+        cliente_ci: formData.cliente_ci,
         municipio_id: formData.municipio_id,
         direccion_detalle: formData.direccion,
         moneda_id: currencyId,
         metodo_pago_id: formData.metodo_pago_id,
-        proveedor_id: providerId, // Add provider_id to order
+        proveedor_id: providerId,
         total_productos: totalPrice(),
         total_envio: shippingCost,
         estado: "pendiente",
@@ -282,6 +284,26 @@ export function CheckoutPage() {
                         setFormData({ ...formData, telefono: e.target.value })
                       }
                     />
+                  </div>
+                  <div className="form-control w-full">
+                    <label className="label font-medium text-gray-600">
+                      Carnet de Identidad (CI)
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="12345678901"
+                      maxLength={11}
+                      pattern="[0-9]{11}"
+                      className="input input-bordered w-full focus:input-primary"
+                      value={formData.cliente_ci}
+                      onChange={(e) =>
+                        setFormData({ ...formData, cliente_ci: e.target.value })
+                      }
+                    />
+                    <label className="label">
+                      <span className="label-text-alt text-gray-400">11 dígitos</span>
+                    </label>
                   </div>
                 </div>
               </div>

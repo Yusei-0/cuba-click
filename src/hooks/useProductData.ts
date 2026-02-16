@@ -13,6 +13,7 @@ export interface ProductDetail {
   categoria_id: string;
   proveedor_id: string;
   activo: boolean;
+  moneda: string;
   categoria: { nombre: string; slug: string } | null;
   metodos_pago: { 
       metodo_pago: { 

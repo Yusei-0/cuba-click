@@ -161,7 +161,7 @@ export default function ProductDetailPage() {
         {/* Precio */}
         <div className="flex items-end gap-3 mb-6">
             <span className="text-3xl font-bold text-blue-600">
-                ${product.precio_final}
+                ${product.precio_final} <span className="text-lg font-normal text-gray-500">{product.moneda || 'USD'}</span>
             </span>
             {discountPercentage > 0 && (
                 <>
