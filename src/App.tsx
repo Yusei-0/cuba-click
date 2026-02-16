@@ -17,6 +17,7 @@ import { AdminCategoriesPage } from "./pages/admin/categories/AdminCategoriesPag
 import { AdminCategoryFormPage } from "./pages/admin/categories/AdminCategoryFormPage";
 import { AdminProvidersPage } from "./pages/admin/providers/AdminProvidersPage";
 import { AdminProviderFormPage } from "./pages/admin/providers/AdminProviderFormPage";
+import { ProductDetailModal } from "./components/ProductDetailModal";
 
 import { CategoryResolver } from "./pages/CategoryResolver";
 import { NotFoundPage } from "./pages/NotFoundPage";
@@ -29,12 +30,18 @@ function App() {
         {/* Public Routes with Main Layout */}
         <Route path="/" element={<HomePage />} />
         
-        <Route path="/catalogo" element={<CatalogPage />} />
+        {/* Catalog with nested modal route */}
+        <Route path="/catalogo" element={<CatalogPage />}>
+          <Route path="producto/:slug" element={<ProductDetailModal />} />
+        </Route>
+        
         <Route path="/cart" element={<CartPage />} />
         <Route path="/carrito" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/pedidos" element={<OrdersPage />} />
         <Route path="/orders" element={<OrdersPage />} />
+        
+        {/* Standalone product detail (for direct links/SEO) */}
         <Route path="/producto/:slug" element={<ProductDetailPage />} />
         <Route path="/p/:slug" element={<ProductDetailPage />} />
         <Route path="/favoritos" element={<FavoritesPage />} />

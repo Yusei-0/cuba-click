@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import type { Database } from "../../types/database.types";
 import { formatPrice } from "../../lib/utils";
 import { CheckCircle2 } from "lucide-react";
@@ -11,12 +11,19 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, variant = "default" }: ProductCardProps) {
+  const location = useLocation();
   const hasWarranty = product.garantia_dias > 0; 
   const displayWarranty = product.garantia_dias >= 30 
     ? `${Math.floor(product.garantia_dias / 30)}m` 
     : `${product.garantia_dias}d`;
 
   const isCatalog = variant === "catalog";
+  const isInCatalog = location.pathname.startsWith('/catalogo');
+  
+  // Use relative path if in catalog, absolute otherwise
+  const productPath = (isCatalog && isInCatalog) 
+    ? `producto/${product.id}` 
+    : `/producto/${product.id}`;
 
   return (
     <div className={`card bg-white shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl overflow-hidden group p-3 border border-gray-100 ${isCatalog ? 'h-full flex flex-col' : ''}`}>
@@ -79,7 +86,7 @@ export function ProductCard({ product, variant = "default" }: ProductCardProps) 
 
         <div className="mt-auto pt-2">
             <Link
-              to={`/producto/${product.id}`}
+              to={productPath}
               className={`btn w-full rounded-xl text-base font-bold min-h-0 h-10 shadow-none border-none z-20 relative flex items-center justify-center no-underline
                 ${isCatalog 
                     ? 'btn-ghost bg-blue-50 text-blue-600 hover:bg-blue-100' 
@@ -92,7 +99,7 @@ export function ProductCard({ product, variant = "default" }: ProductCardProps) 
       </div>
       
       {/* Clickable area for details */}
-      <Link to={`/producto/${product.id}`} className="absolute inset-0 z-0" aria-label={`Ver detalles de ${product.nombre}`} />
+      <Link to={productPath} className="absolute inset-0 z-0" aria-label={`Ver detalles de ${product.nombre}`} />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, Outlet } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import type { Database } from "../types/database.types";
 import { ProductCard } from "../components/ui/ProductCard";
@@ -175,7 +175,8 @@ export function CatalogPage({ categoryIdOverride, categoryNameOverride, category
   };
 
   return (
-    <MobileLayout>
+    <>
+      <MobileLayout>
       <div className="bg-white min-h-screen pb-4">
         <Header />
         <div className="flex flex-col md:flex-row gap-6 p-4">
@@ -373,5 +374,9 @@ export function CatalogPage({ categoryIdOverride, categoryNameOverride, category
         </div>
       </div>
     </MobileLayout>
+    
+    {/* Outlet for nested modal routes */}
+    <Outlet />
+  </>
   );
 }
