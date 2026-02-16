@@ -120,10 +120,6 @@ export default function ProductDetailPage() {
               className={isFavorite(product.id) ? "fill-red-500 text-red-500" : "text-gray-800"} 
             />
           </button>
-          <button className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-all relative">
-            <ShoppingBag size={20} className="text-gray-800" />
-            <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
-          </button>
         </div>
       </div>
 

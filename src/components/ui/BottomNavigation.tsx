@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Search, ShoppingBag, User } from "lucide-react";
+import { Home, Search, ShoppingBag, Heart } from "lucide-react";
 
 export function BottomNavigation() {
   const location = useLocation();
@@ -13,7 +13,7 @@ export function BottomNavigation() {
     { name: "Inicio", path: "/", icon: Home },
     { name: "Buscar", path: "/catalogo", icon: Search },
     { name: "Pedidos", path: "/pedidos", icon: ShoppingBag },
-    { name: "Perfil", path: "/perfil", icon: User },
+    { name: "Favoritos", path: "/favoritos", icon: Heart },
   ];
 
   return (
