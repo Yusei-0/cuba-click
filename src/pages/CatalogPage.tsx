@@ -12,25 +12,33 @@ type Category = Database["public"]["Tables"]["categorias"]["Row"];
 
 // ... imports
 
+import { NotFoundPage } from "./NotFoundPage";
+
+// ... imports
+
 interface CatalogPageProps {
   categoryIdOverride?: string;
   categoryNameOverride?: string;
+  categorySlug?: string;
 }
 
-export function CatalogPage({ categoryIdOverride, categoryNameOverride }: CatalogPageProps) {
+export function CatalogPage({ categoryIdOverride, categoryNameOverride, categorySlug }: CatalogPageProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  // If override is present, use it, UNLESS search params are explicitly set (navigation within the page)
-  // Actually, simpler: searchParam takes precedence if it exists (user clicked something),
-  // otherwise fallback to override.
+  
   const queryCategory = searchParams.get("categoria");
-  const categoryId = queryCategory || categoryIdOverride;
+  // Preliminary categoryId from direct props or query params
+  const directCategoryId = queryCategory || categoryIdOverride;
 
   const searchQuery = searchParams.get("busqueda") || "";
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isNotFound, setIsNotFound] = useState(false);
+  
+  // We need to store the resolved ID from slug if applicable
+  const [resolvedCategoryId, setResolvedCategoryId] = useState<string | null>(null);
 
   // Local state for inputs to allow typing before submitting/syncing
   const [searchTerm, setSearchTerm] = useState(searchQuery);
@@ -43,16 +51,55 @@ export function CatalogPage({ categoryIdOverride, categoryNameOverride }: Catalo
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
+      setIsNotFound(false);
       try {
-        // Fetch Categories
+        // 1. Fetch Categories first (fast lookup)
         const { data: cats } = await supabase.from("categorias").select("*, productos!inner(id)");
-        if (cats) setCategories(cats);
+        let currentCategories: Category[] = cats || [];
+        if (currentCategories.length > 0) setCategories(currentCategories);
 
-        // Fetch Products with filters
+        // 2. Resolve target Category ID
+        let targetId = directCategoryId;
+
+        if (categorySlug && currentCategories.length > 0) {
+            // Try to resolve slug using the loaded categories (avoids extra DB call + blocking)
+            const slugLower = categorySlug.toLowerCase();
+            
+            // Priority 1: Exact Slug Match
+            let match = currentCategories.find(c => c.slug === slugLower);
+            
+            // Priority 2: Exact Name Match
+            if (!match) {
+                match = currentCategories.find(c => c.nombre.toLowerCase() === slugLower);
+            }
+
+            // Priority 3: Fuzzy Name Match (replace dashes with spaces)
+            if (!match) {
+                const fuzzyName = slugLower.replace(/-/g, " ");
+                match = currentCategories.find(c => c.nombre.toLowerCase() === fuzzyName);
+            }
+
+            if (match) {
+                targetId = match.id;
+                setResolvedCategoryId(match.id);
+            } else {
+                // Invalid slug provided
+                console.warn("Category slug not found:", categorySlug);
+                setIsNotFound(true);
+                setLoading(false);
+                return; 
+            }
+        } else if (directCategoryId) {
+            // Reset resolved ID if we are using direct ID
+             setResolvedCategoryId(null);
+        }
+
+
+        // 3. Fetch Products with filters
         let query = supabase.from("productos").select("*");
 
-        if (categoryId) {
-          query = query.eq("categoria_id", categoryId);
+        if (targetId) {
+          query = query.eq("categoria_id", targetId);
         }
 
         if (searchQuery) {
@@ -70,7 +117,14 @@ export function CatalogPage({ categoryIdOverride, categoryNameOverride }: Catalo
     }
 
     fetchData();
-  }, [categoryId, searchQuery]);
+  }, [directCategoryId, categorySlug, searchQuery]);
+
+  // Handle 404 immediately
+  if (isNotFound) {
+      return <NotFoundPage />;
+  }
+
+  const activeCategoryId = resolvedCategoryId || directCategoryId;
 
   const handleCategoryChange = (id: string | null) => {
     if (id) {
@@ -105,20 +159,17 @@ export function CatalogPage({ categoryIdOverride, categoryNameOverride }: Catalo
     setSearchTerm("");
     setShowMobileFilters(false);
   };
-
-  const activeFiltersCount = (categoryId ? 1 : 0) + (searchQuery ? 1 : 0);
+ 
+  // Re-calculate activeFiltersCount using activeCategoryId
+  const activeFiltersCount = (activeCategoryId ? 1 : 0) + (searchQuery ? 1 : 0);
 
   // Determine page title
-  // Priority: 
-  // 1. Resolved Name from prop (categoryNameOverride) IF we are using the override ID (no query param)
-  // 2. Name from category list (if found)
-  // 3. Default "Productos"
   const getPageTitle = () => {
-     if (categoryId && categoryId === categoryIdOverride && categoryNameOverride) {
+     if (activeCategoryId && activeCategoryId === categoryIdOverride && categoryNameOverride) {
          return categoryNameOverride;
      }
-     if (categoryId) {
-         return categories.find((c) => c.id === categoryId)?.nombre || "Productos";
+     if (activeCategoryId) {
+         return categories.find((c) => c.id === activeCategoryId)?.nombre || "Productos";
      }
      return "Todos los productos";
   };
@@ -128,11 +179,15 @@ export function CatalogPage({ categoryIdOverride, categoryNameOverride }: Catalo
       <div className="bg-white min-h-screen pb-4">
         <Header />
         <div className="flex flex-col md:flex-row gap-6 p-4">
-          {/* Mobile Category Title */}
+            {/* Mobile Category Title */}
           <div className="md:hidden mb-1 px-1">
-            <h1 className="text-3xl font-extrabold text-gray-900 capitalize tracking-tight">
-              {getPageTitle()}
-            </h1>
+            {loading && !activeCategoryId ? (
+               <div className="skeleton h-9 w-48 mb-1 rounded-lg"></div>
+            ) : (
+                <h1 className="text-3xl font-extrabold text-gray-900 capitalize tracking-tight">
+                {getPageTitle()}
+                </h1>
+            )}
           </div>
 
           {/* Mobile Filter Toggle */}
@@ -213,7 +268,7 @@ export function CatalogPage({ categoryIdOverride, categoryNameOverride }: Catalo
               <ul className="menu bg-base-100 w-full p-0 [&_li>*]:rounded-md gap-1">
                 <li>
                   <button
-                    className={!categoryId ? "active font-bold" : ""}
+                    className={!activeCategoryId ? "active font-bold" : ""}
                     onClick={() => handleCategoryChange(null)}
                   >
                     Todas las categorías
@@ -222,7 +277,7 @@ export function CatalogPage({ categoryIdOverride, categoryNameOverride }: Catalo
                 {categories.map((cat) => (
                   <li key={cat.id}>
                     <button
-                      className={categoryId === cat.id ? "active font-bold" : ""}
+                      className={activeCategoryId === cat.id ? "active font-bold" : ""}
                       onClick={() => handleCategoryChange(cat.id)}
                     >
                       {cat.nombre}
@@ -244,14 +299,18 @@ export function CatalogPage({ categoryIdOverride, categoryNameOverride }: Catalo
           {/* Product Grid */}
           <div className="grow">
             <div className="hidden md:flex mb-6 justify-between items-center">
-              <h2 className="text-2xl font-bold">
-                {getPageTitle()}
-                {searchQuery && (
-                  <span className="text-gray-500 font-normal ml-2 text-lg">
-                    Resultados para "{searchQuery}"
-                  </span>
-                )}
-              </h2>
+              {loading && !activeCategoryId ? (
+                  <div className="skeleton h-8 w-64 rounded-lg"></div>
+              ) : (
+                  <h2 className="text-2xl font-bold">
+                    {getPageTitle()}
+                    {searchQuery && (
+                      <span className="text-gray-500 font-normal ml-2 text-lg">
+                        Resultados para "{searchQuery}"
+                      </span>
+                    )}
+                  </h2>
+              )}
 
               <span className="text-sm text-gray-500">
                 {products.length} resultados
