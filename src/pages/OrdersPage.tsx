@@ -15,6 +15,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { formatPrice } from "../lib/utils";
+import { OrderCardSkeleton } from "../components/ui/skeletons/OrderCardSkeleton";
 
 const STATUS_CONFIG = {
   pendiente: {
@@ -23,7 +24,13 @@ const STATUS_CONFIG = {
     color: "text-yellow-600",
     bgColor: "bg-yellow-100",
   },
-  confirmado: {
+  pagado: {
+    label: "Pagado",
+    icon: CheckCircle,
+    color: "text-blue-600",
+    bgColor: "bg-blue-100",
+  },
+  confirmado: { // Keeping for backward compatibility if needed, though likely deprecated
     label: "Confirmado",
     icon: CheckCircle,
     color: "text-blue-600",
@@ -37,9 +44,15 @@ const STATUS_CONFIG = {
   },
   entregado: {
     label: "Entregado",
-    icon: CheckCircle,
+    icon: Package, // Using Package icon for delivered if CheckCircle is reused
     color: "text-green-600",
     bgColor: "bg-green-100",
+  },
+  completado: {
+    label: "Completado",
+    icon: CheckCircle,
+    color: "text-emerald-700",
+    bgColor: "bg-emerald-100",
   },
   cancelado: {
     label: "Cancelado",
@@ -53,7 +66,7 @@ function OrderCardItem({ order }: { order: LocalOrder }) {
   const [isOpen, setIsOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   
-  const statusConfig = STATUS_CONFIG[order.estado];
+  const statusConfig = STATUS_CONFIG[order.estado] || STATUS_CONFIG["pendiente"];
   const StatusIcon = statusConfig.icon;
 
   const handleCopy = async (code: string, e: React.MouseEvent) => {
@@ -232,8 +245,8 @@ export function OrdersPage() {
           <div className="px-4 pb-6">
             {loading ? (
               <div className="space-y-3">
-                 {[1, 2, 3].map((i) => (
-                    <div key={i} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 animate-pulse h-24"></div>
+                 {[1, 2, 3, 4, 5].map((i) => (
+                    <OrderCardSkeleton key={i} />
                  ))}
               </div>
             ) : filteredOrders.length === 0 ? (

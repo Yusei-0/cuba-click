@@ -36,15 +36,6 @@ export function ProductDetailModal() {
   const [isClosing, setIsClosing] = useState(false);
   
   const { product, loading, error } = useProductData(slug || '');
-
-  // Debug logging
-  useEffect(() => {
-    if (product) {
-      console.log("Product Modal Data:", product);
-      console.log("Modale Envio Gratis State:", product.envio_gratis);
-    }
-  }, [product]);
-
   const { isFavorite, toggleFavorite } = useFavorites();
   const { 
     municipios, 
