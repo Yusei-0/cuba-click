@@ -16,18 +16,23 @@ interface ExchangeRatesState {
   rates: TasaCambioWithDetails[];
   loading: boolean;
   error: string | null;
-  fetchRates: () => Promise<void>;
+  loaded: boolean;
+  fetchRates: (force?: boolean) => Promise<void>;
   addRate: (rate: TasaCambioInsert) => Promise<void>;
   updateRate: (id: string, tasa: number) => Promise<void>;
   deleteRate: (id: string) => Promise<void>;
 }
 
-export const useExchangeRatesStore = create<ExchangeRatesState>((set) => ({
+export const useExchangeRatesStore = create<ExchangeRatesState>((set, get) => ({
   rates: [],
   loading: false,
   error: null,
+  loaded: false,
 
-  fetchRates: async () => {
+  fetchRates: async (force = false) => {
+    const { loaded, loading } = get();
+    if (!force && (loaded || loading)) return;
+
     set({ loading: true, error: null });
     try {
       const { data, error } = await supabase
@@ -42,7 +47,10 @@ export const useExchangeRatesStore = create<ExchangeRatesState>((set) => ({
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      set({ rates: data as any || [] }); // Cast to any because the types are complex with joins
+      set({ 
+        rates: data as any || [],
+        loaded: true
+      });
     } catch (error) {
       console.error('Error fetching rates:', error);
       set({ error: (error as Error).message });
@@ -68,7 +76,10 @@ export const useExchangeRatesStore = create<ExchangeRatesState>((set) => ({
         .single();
 
       if (error) throw error;
-      set((state) => ({ rates: [data as any, ...state.rates] }));
+      set((state) => ({ 
+        rates: [data as any, ...state.rates],
+        // No need to invalidate loaded since we pushed the new item
+      }));
     } catch (error) {
       console.error('Error adding rate:', error);
       set({ error: (error as Error).message });

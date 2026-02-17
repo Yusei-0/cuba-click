@@ -26,12 +26,19 @@ import { CategoryResolver } from "./pages/CategoryResolver";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { useEffect } from "react";
 import { useExchangeRatesStore } from "./store/useExchangeRatesStore";
+import { useConfigStore } from "./store/useConfigStore";
+import { useMunicipiosStore } from "./store/useMunicipiosStore";
 
 export default function App() {
   const { fetchRates } = useExchangeRatesStore();
+  const { fetchConfig } = useConfigStore();
+  const { fetchMunicipios } = useMunicipiosStore();
   
   useEffect(() => {
+    // Prefetch essential data
     fetchRates();
+    fetchConfig('base_exchange_source');
+    fetchMunicipios();
   }, []);
 
   return (
@@ -68,6 +75,7 @@ export default function App() {
         
         {/* Dynamic Category Route & 404 */}
         <Route path="/categoria/:slug" element={<CategoryResolver />} />
+        <Route path="/categorias/:slug" element={<CategoryResolver />} />
         <Route path="/category/:slug" element={<CategoryResolver />} />
         <Route path="/404" element={<NotFoundPage />} />
 

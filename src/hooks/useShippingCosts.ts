@@ -1,11 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-
-interface Municipio {
-  id: string;
-  nombre: string;
-}
+import { useMunicipiosStore } from '../store/useMunicipiosStore';
 
 interface ShippingCost {
   municipio_id: string;
@@ -13,27 +8,26 @@ interface ShippingCost {
 }
 
 export const useShippingCosts = (providerId: string | undefined) => {
-  const [municipios, setMunicipios] = useState<Municipio[]>([]);
+  const { municipios, fetchMunicipios } = useMunicipiosStore();
   const [costs, setCosts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(false);
   const [selectedMunicipio, setSelectedMunicipio] = useState<string>('');
 
+  // 1. Fetch Municipios (Cached)
   useEffect(() => {
-    const fetchShippingData = async () => {
-      if (!providerId) return;
+    fetchMunicipios();
+  }, [fetchMunicipios]);
+
+  // 2. Fetch Costs for Provider
+  useEffect(() => {
+    const fetchCosts = async () => {
+      if (!providerId) {
+        setCosts({});
+        return;
+      }
       
       setLoading(true);
       try {
-        // 1. Fetch all municipalities (for the dropdown)
-        const { data: mData, error: mError } = await supabase
-          .from('municipios')
-          .select('id, nombre')
-          .order('nombre');
-        
-        if (mError) throw mError;
-        setMunicipios(mData || []);
-
-        // 2. Fetch costs for this provider
         const { data: cData, error: cError } = await supabase
           .from('costos_envio')
           .select('municipio_id, costo')
@@ -46,15 +40,14 @@ export const useShippingCosts = (providerId: string | undefined) => {
           costMap[item.municipio_id] = item.costo;
         });
         setCosts(costMap);
-
       } catch (err) {
-        console.error("Error fetching shipping data:", err);
+        console.error("Error fetching shipping costs:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchShippingData();
+    fetchCosts();
   }, [providerId]);
 
   return { 
@@ -63,6 +56,6 @@ export const useShippingCosts = (providerId: string | undefined) => {
     loading, 
     selectedMunicipio, 
     setSelectedMunicipio,
-    currentCost: costs[selectedMunicipio] ?? null 
+    currentCost: selectedMunicipio ? (costs[selectedMunicipio] ?? 0) : null 
   };
 };

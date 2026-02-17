@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, Link } from "react-router-dom";
 import { useOrdersStore, type LocalOrder } from "../store/useOrdersStore";
 import { MobileLayout } from "../components/layout/MobileLayout";
@@ -191,8 +191,12 @@ function OrderCardItem({ order }: { order: LocalOrder }) {
 // ... (OrderCardItem code remains above)
 
 export function OrdersPage() {
-  const { orders } = useOrdersStore();
+  const { orders, fetchOrders, loading } = useOrdersStore();
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const filteredOrders = orders.filter(
     (order) =>
@@ -226,7 +230,13 @@ export function OrdersPage() {
 
           {/* Orders List */}
           <div className="px-4 pb-6">
-            {filteredOrders.length === 0 ? (
+            {loading ? (
+              <div className="space-y-3">
+                 {[1, 2, 3].map((i) => (
+                    <div key={i} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 animate-pulse h-24"></div>
+                 ))}
+              </div>
+            ) : filteredOrders.length === 0 ? (
               <div className="text-center py-12">
                 <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h2 className="text-xl font-bold text-gray-900 mb-2">

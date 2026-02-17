@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { useConfigStore } from '../store/useConfigStore';
+import { useExchangeRatesStore } from '../store/useExchangeRatesStore';
 
 export interface PaymentMethod {
   id: string;
@@ -17,6 +19,7 @@ interface PaymentMethodsResult {
 /**
  * Hook para cargar métodos de pago filtrados por proveedor y moneda
  * Incluye la tasa de cambio configurada si existe.
+ * USES CACHE FROM STORES
  */
 export function usePaymentMethods(
   providerId: string | undefined,
@@ -25,6 +28,10 @@ export function usePaymentMethods(
   const [methods, setMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Use Stores
+  const { fetchConfig } = useConfigStore();
+  const { rates, fetchRates } = useExchangeRatesStore();
 
   useEffect(() => {
     async function loadMethods() {
@@ -38,36 +45,28 @@ export function usePaymentMethods(
         setLoading(true);
         setError(null);
 
-        // 1. Fetch Base Configuration
-        const { data: configData, error: configError } = await supabase
-          .from('configuraciones')
-          .select('value')
-          .eq('key', 'base_exchange_source')
-          .single();
-
-        if (configError && configError.code !== 'PGRST116') {
-             console.error('Error fetching config:', configError);
-        }
-
-        const baseConfig = (configData as any)?.value || { moneda_id: '', metodo_pago_id: '' };
+        // 1. Fetch Base Configuration (Cached)
+        const baseConfigValue = await fetchConfig('base_exchange_source');
+        const baseConfig = baseConfigValue || { moneda_id: '', metodo_pago_id: '' };
 
         // 1.1 Fetch Base Currency Code if config exists
         let baseCurrencyCode = '';
         if (baseConfig.moneda_id) {
-            const { data: monedaDataResult } = await supabase
+             const { data: monedaDataResult } = await supabase
                 .from('monedas')
                 .select('codigo')
                 .eq('id', baseConfig.moneda_id)
                 .single();
+            // TODO: Cache Monedas too if needed, but for now specific ID select is fast or handled by Supabase client cache if configured
             
             const monedaData = monedaDataResult as any;
-
             if (monedaData) {
                 baseCurrencyCode = monedaData.codigo;
             }
         }
 
         // 2. Fetch Provider's Allowed Methods (just the IDs)
+        // This is specific to provider/currency, difficult to cache globally without complex keying.
         const { data: providerMethods, error: providerError } = await supabase
           .from('proveedor_moneda_metodos_pago')
           .select(`
@@ -86,21 +85,16 @@ export function usePaymentMethods(
         const allowedMethodIds = (providerMethods as any[])?.map((pm: any) => pm.metodo_pago_id) || [];
         let validRates: any[] = [];
 
+        // Fetch rates from store (Cached)
+        await fetchRates();
+        
+        // Filter in memory from store rates
         if (baseConfig.moneda_id && baseConfig.metodo_pago_id && allowedMethodIds.length > 0) {
-             const { data: ratesData, error: ratesError } = await supabase
-            .from('tasas_cambio')
-            .select(`
-                *,
-                moneda_destino:monedas!moneda_destino_id(codigo),
-                metodo_pago_destino:metodos_pago!metodo_pago_destino_id(nombre)
-            `)
-            .eq('moneda_origen_id', baseConfig.moneda_id)
-            .eq('metodo_pago_origen_id', baseConfig.metodo_pago_id)
-            .in('metodo_pago_destino_id', allowedMethodIds);
-
-            if (!ratesError) {
-                validRates = ratesData || [];
-            }
+            validRates = rates.filter(r => 
+                r.moneda_origen_id === baseConfig.moneda_id &&
+                r.metodo_pago_origen_id === baseConfig.metodo_pago_id &&
+                r.metodo_pago_destino_id && allowedMethodIds.includes(r.metodo_pago_destino_id)
+            );
         }
 
         // 3.1 Handle Identity Case (Same Currency, Same Method)
@@ -125,7 +119,9 @@ export function usePaymentMethods(
                      });
                  } else {
                      // Force it to 1.0 if it's the same method ID (Identity)
-                     validRates[existingRateIndex].tasa = 1;
+                     // Create a copy to avoid mutating store state directly if it came from store
+                     validRates = [...validRates];
+                     validRates[existingRateIndex] = { ...validRates[existingRateIndex], tasa: 1 };
                  }
              }
         }
@@ -157,7 +153,7 @@ export function usePaymentMethods(
     }
 
     loadMethods();
-  }, [providerId, moneda]);
+  }, [providerId, moneda, fetchConfig, fetchRates, rates]); // Added dependencies
 
   return { methods, loading, error };
 }

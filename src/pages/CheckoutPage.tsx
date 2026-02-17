@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useCartStore } from "../store/useCartStore";
 import { useOrdersStore } from "../store/useOrdersStore";
+import { useMunicipiosStore } from "../store/useMunicipiosStore";
 import { useTrackingCode } from "../hooks/useTrackingCode";
 import { usePaymentMethods } from "../hooks/usePaymentMethods";
 import type { Database } from "../types/database.types";
@@ -33,8 +34,8 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const { addToast } = useToastStore();
   const isOrderCompleted = useRef(false);
+  const { municipios, fetchMunicipios } = useMunicipiosStore();
 
-  const [municipios, setMunicipios] = useState<Municipality[]>([]);
   const [selectedMoneda, setSelectedMoneda] = useState<string>("");
 
   // Form state
@@ -75,12 +76,7 @@ export function CheckoutPage() {
       }
 
       // Load municipios
-      const { data: munData } = await supabase
-        .from("municipios")
-        .select("*")
-        .order("nombre");
-
-      if (munData) setMunicipios(munData);
+      fetchMunicipios();
 
       setLoading(false);
     }

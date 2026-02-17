@@ -175,10 +175,10 @@ export function HomePage() {
                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-primary">
                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                        </div>
-                       <p className="text-xs font-medium text-gray-600">Pagos 100% Seguros</p>
+                       <p className="text-xs font-medium text-gray-600">Pago al entregar el producto</p>
                    </div>
                </div>
-               <p className="text-[10px] text-gray-400">© 2024 Cuba Click. Todos los derechos reservados.</p>
+               <p className="text-[10px] text-gray-400">© 2026 Cuba Click. Todos los derechos reservados.</p>
            </div>
         </div>
       </div>
