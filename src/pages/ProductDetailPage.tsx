@@ -19,6 +19,7 @@ export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   // For now using slug as ID as discussed in hooks creation
   const { product, loading, error } = useProductData(slug || '');
+
   const { isFavorite, toggleFavorite } = useFavorites();
   const { 
     municipios, 
@@ -203,36 +204,48 @@ export default function ProductDetailPage() {
             )}
         </div>
 
-        {/* 4. Calculadora de Envío */}
-        <div className="bg-blue-50/50 rounded-2xl p-4 mb-6 border border-blue-100">
-            <div className="flex items-center gap-2 mb-3">
-                <Truck className="text-blue-600" size={20} />
-                <span className="font-bold text-gray-800">Calculadora de Envío</span>
-            </div>
-            
-            <div className="flex flex-col gap-3">
-                <select 
-                    className="select select-bordered select-sm w-full bg-white text-gray-700 focus:outline-none focus:border-blue-500"
-                    value={selectedMunicipio}
-                    onChange={(e) => setSelectedMunicipio(e.target.value)}
-                    disabled={loadingShipping}
-                >
-                    <option value="">Selecciona tu municipio</option>
-                    {municipios.map(m => (
-                        <option key={m.id} value={m.id}>{m.nombre}</option>
-                    ))}
-                </select>
+        {/* 4. Calculadora de Envío o Envío Gratis */}
+        {product.envio_gratis ? (
+             <div className="bg-green-50 rounded-2xl p-4 mb-6 border border-green-100 flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Truck className="text-green-600" size={20} />
+                </div>
+                <div>
+                    <h3 className="font-bold text-green-800">Envío Gratis</h3>
+                    <p className="text-green-600 text-xs">Incluido para todos los municipios</p>
+                </div>
+             </div>
+        ) : (
+            <div className="bg-blue-50/50 rounded-2xl p-4 mb-6 border border-blue-100">
+                <div className="flex items-center gap-2 mb-3">
+                    <Truck className="text-blue-600" size={20} />
+                    <span className="font-bold text-gray-800">Calculadora de Envío</span>
+                </div>
+                
+                <div className="flex flex-col gap-3">
+                    <select 
+                        className="select select-bordered select-sm w-full bg-white text-gray-700 focus:outline-none focus:border-blue-500"
+                        value={selectedMunicipio}
+                        onChange={(e) => setSelectedMunicipio(e.target.value)}
+                        disabled={loadingShipping}
+                    >
+                        <option value="">Selecciona tu municipio</option>
+                        {municipios.map(m => (
+                            <option key={m.id} value={m.id}>{m.nombre}</option>
+                        ))}
+                    </select>
 
-                <div className="flex justify-between items-center px-1">
-                    <span className="text-sm text-gray-500">Costo estimado:</span>
-                    <span className={`font-bold ${shippingCost != null ? 'text-gray-900' : 'text-gray-400'}`}>
-                        {shippingCost != null 
-                            ? `$${shippingCost.toFixed(2)} USD` 
-                            : '--'}
-                    </span>
+                    <div className="flex justify-between items-center px-1">
+                        <span className="text-sm text-gray-500">Costo estimado:</span>
+                        <span className={`font-bold ${shippingCost != null ? 'text-gray-900' : 'text-gray-400'}`}>
+                            {shippingCost != null 
+                                ? `$${shippingCost.toFixed(2)} USD` 
+                                : '--'}
+                        </span>
+                    </div>
                 </div>
             </div>
-        </div>
+        )}
 
         {/* Métodos de Pago */}
         {product.metodos_pago && product.metodos_pago.length > 0 && (

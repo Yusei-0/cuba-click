@@ -138,6 +138,7 @@ export interface Database {
           activo: boolean;
           created_at: string;
           moneda: string;
+          envio_gratis: boolean;
         };
         Insert: {
           id?: string;
@@ -153,6 +154,7 @@ export interface Database {
           activo?: boolean;
           created_at?: string;
           moneda?: string;
+          envio_gratis?: boolean;
         };
         Update: {
           id?: string;
@@ -168,6 +170,7 @@ export interface Database {
           activo?: boolean;
           created_at?: string;
           moneda?: string;
+          envio_gratis?: boolean;
         };
       };
       producto_municipios: {

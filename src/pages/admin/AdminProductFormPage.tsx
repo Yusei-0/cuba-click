@@ -448,8 +448,23 @@ export function AdminProductFormPage() {
                   />
                 </label>
                 <p className="text-xs text-gray-400 mt-2">
-                  Si se desactiva, el producto no será visible para los
-                  clientes.
+                  Si se desactiva, el producto no será visible para los clientes.
+                </p>
+              </div>
+
+              <div className="form-control mt-4">
+                <label className="cursor-pointer label justify-between p-0">
+                  <span className="label-text font-medium text-gray-600">
+                    Envío Gratis
+                  </span>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-secondary"
+                    {...register("envio_gratis")}
+                  />
+                </label>
+                <p className="text-xs text-gray-400 mt-2">
+                  Si se activa, el producto tendrá envío gratuito en todos los municipios.
                 </p>
               </div>
             </div>

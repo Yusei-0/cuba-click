@@ -97,6 +97,12 @@ export function CheckoutPage() {
         return;
       }
 
+      // Check if product has free shipping
+      if (items[0].envio_gratis) {
+        setShippingCost(0);
+        return;
+      }
+
       const providerId = items[0].proveedor_id;
       if (!providerId) return;
 
@@ -269,7 +275,7 @@ export function CheckoutPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-white border-b  sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
@@ -534,8 +540,8 @@ export function CheckoutPage() {
             <div className="flex justify-between text-gray-600">
               <span className="flex items-center gap-1">
                 Envío
-                {shippingCost === 0 && formData.municipio_id && (
-                  <span className="text-xs text-green-600">(Gratis)</span>
+                {(shippingCost === 0 && (formData.municipio_id || product.envio_gratis)) && (
+                  <span className="text-xs text-green-600 font-bold ml-1">GRATIS</span>
                 )}
               </span>
               <span className="font-medium">

@@ -36,6 +36,15 @@ export function ProductDetailModal() {
   const [isClosing, setIsClosing] = useState(false);
   
   const { product, loading, error } = useProductData(slug || '');
+
+  // Debug logging
+  useEffect(() => {
+    if (product) {
+      console.log("Product Modal Data:", product);
+      console.log("Modale Envio Gratis State:", product.envio_gratis);
+    }
+  }, [product]);
+
   const { isFavorite, toggleFavorite } = useFavorites();
   const { 
     municipios, 
@@ -208,32 +217,45 @@ export function ProductDetailModal() {
               </div>
 
               {/* Shipping Calculator */}
-              <div className="bg-blue-50/50 rounded-2xl p-4 mb-6 border border-blue-100">
-                <div className="flex items-center gap-2 mb-3">
-                  <Truck className="text-blue-600" size={20} />
-                  <span className="font-bold text-gray-800">Calculadora de Envío</span>
+              {/* Shipping Calculator or Free Shipping Banner */}
+              {product.envio_gratis ? (
+                <div className="bg-green-50 rounded-2xl p-4 mb-6 border border-green-100 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Truck className="text-green-600" size={20} />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-green-800">Envío Gratis</h3>
+                        <p className="text-green-600 text-xs">Incluido para todos los municipios</p>
+                    </div>
                 </div>
-                
-                <div className="flex flex-col gap-3">
-                  <CustomSelect
-                    value={selectedMunicipio}
-                    onChange={setSelectedMunicipio}
-                    options={municipios.map(m => ({ value: m.id, label: m.nombre }))}
-                    placeholder="Selecciona tu municipio"
-                    disabled={loadingShipping}
-                    className="w-full"
-                  />
+              ) : (
+                <div className="bg-blue-50/50 rounded-2xl p-4 mb-6 border border-blue-100">
+                    <div className="flex items-center gap-2 mb-3">
+                    <Truck className="text-blue-600" size={20} />
+                    <span className="font-bold text-gray-800">Calculadora de Envío</span>
+                    </div>
+                    
+                    <div className="flex flex-col gap-3">
+                    <CustomSelect
+                        value={selectedMunicipio}
+                        onChange={setSelectedMunicipio}
+                        options={municipios.map(m => ({ value: m.id, label: m.nombre }))}
+                        placeholder="Selecciona tu municipio"
+                        disabled={loadingShipping}
+                        className="w-full"
+                    />
 
-                  <div className="flex justify-between items-center px-1">
-                    <span className="text-sm text-gray-500">Costo estimado:</span>
-                    <span className={`font-bold ${shippingCost != null ? 'text-gray-900' : 'text-gray-400'}`}>
-                      {shippingCost != null 
-                        ? `$${shippingCost.toFixed(2)} USD` 
-                        : '--'}
-                    </span>
-                  </div>
+                    <div className="flex justify-between items-center px-1">
+                        <span className="text-sm text-gray-500">Costo estimado:</span>
+                        <span className={`font-bold ${shippingCost != null ? 'text-gray-900' : 'text-gray-400'}`}>
+                        {shippingCost != null 
+                            ? `$${shippingCost.toFixed(2)} USD` 
+                            : '--'}
+                        </span>
+                    </div>
+                    </div>
                 </div>
-              </div>
+              )}
 
               {/* Payment Methods */}
               {product.metodos_pago && product.metodos_pago.length > 0 && (

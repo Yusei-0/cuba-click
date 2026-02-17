@@ -14,6 +14,7 @@ export interface ProductDetail {
   proveedor_id: string;
   activo: boolean;
   moneda: string;
+  envio_gratis?: boolean;
   categoria: { nombre: string; slug: string } | null;
   metodos_pago: { 
       metodo_pago: { 
@@ -53,6 +54,7 @@ export const useProductData = (slug: string) => {
           .from('productos')
           .select(`
             *,
+            envio_gratis,
             categoria:categorias(nombre, slug),
             proveedor:proveedores (
               proveedor_metodos_pago (
@@ -64,6 +66,7 @@ export const useProductData = (slug: string) => {
           .single();
 
         if (error) throw error;
+        if (!data) throw new Error("Product not found");
 
         // Flatten the structure for the UI
         const flattenedProduct = {
