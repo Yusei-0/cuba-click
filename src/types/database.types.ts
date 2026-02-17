@@ -40,6 +40,29 @@ export interface Database {
           nombre?: string;
         };
       };
+      configuraciones: {
+        Row: {
+          key: string;
+          value: Json;
+          description: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          value: Json;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          value?: Json;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       proveedores: {
         Row: {
           id: string;
@@ -280,6 +303,64 @@ export interface Database {
           id?: string;
           proveedor_id?: string;
           metodo_pago_id?: string;
+        };
+      };
+      tasas_cambio: {
+        Row: {
+          id: string;
+          moneda_origen_id: string;
+          metodo_pago_origen_id: string;
+          moneda_destino_id: string;
+          metodo_pago_destino_id: string;
+          tasa: number;
+          actualizado_en: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          moneda_origen_id: string;
+          metodo_pago_origen_id: string;
+          moneda_destino_id: string;
+          metodo_pago_destino_id: string;
+          tasa: number;
+          actualizado_en?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          moneda_origen_id?: string;
+          metodo_pago_origen_id?: string;
+          moneda_destino_id?: string;
+          metodo_pago_destino_id?: string;
+          tasa?: number;
+          actualizado_en?: string | null;
+          created_at?: string;
+        };
+      };
+      proveedor_moneda_metodos_pago: {
+        Row: {
+          id: string;
+          proveedor_id: string;
+          moneda: string;
+          metodo_pago_id: string;
+          tasa_cambio_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          proveedor_id: string;
+          moneda: string;
+          metodo_pago_id: string;
+          tasa_cambio_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          proveedor_id?: string;
+          moneda?: string;
+          metodo_pago_id?: string;
+          tasa_cambio_id?: string | null;
+          created_at?: string;
         };
       };
     };

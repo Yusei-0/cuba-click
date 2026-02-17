@@ -120,7 +120,7 @@ export function AdminProvidersPage() {
                   <td className="text-right">
                     <div className="flex justify-end gap-2">
                       <Link
-                        to={`/admin/proveedores/${p.id}`}
+                        to={`/admin/proveedores/editar/${p.id}`}
                         className="btn btn-sm btn-square btn-ghost"
                       >
                         <Edit className="w-4 h-4 text-primary" />

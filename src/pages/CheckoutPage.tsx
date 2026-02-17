@@ -18,10 +18,6 @@ import {
   Plus,
   Smartphone,
   Landmark,
-  Truck,
-  CheckCircle,
-  AlertCircle,
-  ChevronDown,
 } from "lucide-react";
 import { CustomSelect } from "../components/ui/CustomSelect";
 import { useToastStore } from "../store/useToastStore";
@@ -126,6 +122,23 @@ export function CheckoutPage() {
     calculateShipping();
   }, [formData.municipio_id, items]);
 
+  // Get selected payment method details
+  const selectedPaymentMethod = metodosPago.find(
+    (m) => m.id === formData.metodo_pago_id
+  );
+
+  // Determine exchange rate and final currency
+  const exchangeRate = selectedPaymentMethod?.tasa || 1;
+  const finalCurrency = selectedPaymentMethod?.moneda_destino || selectedMoneda || "USD";
+
+  // Calculate totals
+  const subtotalUSD = totalPrice() * cantidad;
+  const totalUSD = subtotalUSD + shippingCost;
+  
+  const subtotalConverted = subtotalUSD * exchangeRate;
+  const shippingConverted = shippingCost * exchangeRate;
+  const totalConverted = totalUSD * exchangeRate;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -137,6 +150,8 @@ export function CheckoutPage() {
       const providerId = items[0].proveedor_id;
 
       // Get currency ID (using product's currency)
+      // Note: We are saving the order in the PRODUCT'S currency (usually USD) for consistency
+      // The conversion is for display and payment purposes.
       const { data: currencyData } = await (supabase.from("monedas") as any)
         .select("id")
         .eq("codigo", product.moneda || "USD")
@@ -153,8 +168,8 @@ export function CheckoutPage() {
         moneda_id: currencyId,
         metodo_pago_id: formData.metodo_pago_id,
         proveedor_id: providerId,
-        total_productos: totalPrice() * cantidad,
-        total_envio: shippingCost,
+        total_productos: subtotalUSD, // Saving in USD
+        total_envio: shippingCost,    // Saving in USD
         estado: "pendiente",
         codigo_tracking: trackingCode,
       };
@@ -176,7 +191,7 @@ export function CheckoutPage() {
           pedido_id: order.id,
           producto_id: item.id,
           cantidad: cantidad,
-          precio_unitario: item.precio_final,
+          precio_unitario: item.precio_final, // Saving in USD
         });
 
         if (detailError) throw detailError;
@@ -185,29 +200,33 @@ export function CheckoutPage() {
       // Save to local storage
       const municipioNombre =
         municipios.find((m) => m.id === formData.municipio_id)?.nombre || "";
-      const metodoPagoNombre =
-        metodosPago.find((m) => m.id === formData.metodo_pago_id)?.nombre || "";
+      const metodoPagoNombre = selectedPaymentMethod?.nombre || "";
 
-      addOrder({
+      // Correct way: Update the local store adding to the list
+      // I will create a separate object for addOrder call to ensure I pass the converted values.
+      
+      const localOrderData = {
         id: order.id,
         codigo_tracking: trackingCode,
         producto_id: product.id,
         producto_nombre: product.nombre,
         producto_foto: product.foto_url || "",
         cantidad,
-        precio_unitario: product.precio_final,
-        costo_envio: shippingCost,
-        total: totalPrice() * cantidad + shippingCost,
-        moneda: product.moneda || "USD",
+        precio_unitario: product.precio_final * exchangeRate, // Converted
+        costo_envio: shippingConverted,
+        total: totalConverted,
+        moneda: finalCurrency,
         cliente_nombre: formData.nombre,
         cliente_telefono: formData.telefono,
         cliente_ci: formData.cliente_ci,
         municipio_nombre: municipioNombre,
         direccion: formData.direccion,
         metodo_pago: metodoPagoNombre,
-        estado: "pendiente",
+        estado: "pendiente" as const, // Explicit cast to literal type
         created_at: new Date().toISOString(),
-      });
+      };
+      
+      addOrder(localOrderData);
 
       // Clear cart
       clearCart();
@@ -233,9 +252,6 @@ export function CheckoutPage() {
     formData.direccion &&
     formData.metodo_pago_id &&
     cantidad > 0;
-
-  const subtotal = totalPrice() * cantidad;
-  const total = subtotal + shippingCost;
 
   // Helper to get payment icon
   const getPaymentIcon = (methodName: string) => {
@@ -270,6 +286,11 @@ export function CheckoutPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        {/* DATOS DEL CLIENTE - Unchanged parts omitted for brevity in replace_file_content... 
+           Actually replace_file_content requires exact match usually. 
+           I will try to match the block starting from handleSubmit definition to the end of form submission or summary.
+        */}
+
         {/* DATOS DEL CLIENTE */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
@@ -506,7 +527,12 @@ export function CheckoutPage() {
             <div className="flex justify-between text-gray-600">
               <span>Subtotal</span>
               <span className="font-medium">
-                {formatPrice(subtotal, product.moneda || "USD")}
+                {formatPrice(subtotalConverted, finalCurrency)}
+                {exchangeRate !== 1 && (
+                  <span className="text-xs text-gray-400 block text-right">
+                    Only {formatPrice(subtotalUSD, selectedMoneda || "USD")}
+                  </span>
+                )}
               </span>
             </div>
             <div className="flex justify-between text-gray-600">
@@ -517,15 +543,22 @@ export function CheckoutPage() {
                 )}
               </span>
               <span className="font-medium">
-                {formatPrice(shippingCost, product.moneda || "USD")}
+                {formatPrice(shippingConverted, finalCurrency)}
               </span>
             </div>
             <div className="h-px bg-gray-200 my-3"></div>
             <div className="flex justify-between items-center">
               <span className="text-lg font-bold text-gray-900">Total a Pagar</span>
-              <span className="text-3xl font-bold text-blue-600">
-                {formatPrice(total, product.moneda || "USD")}
-              </span>
+              <div className="text-right">
+                <span className="text-3xl font-bold text-blue-600 block">
+                  {formatPrice(totalConverted, finalCurrency)}
+                </span>
+                {exchangeRate !== 1 && (
+                  <span className="text-sm text-gray-500">
+                    ({formatPrice(totalUSD, selectedMoneda || "USD")})
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -548,7 +581,7 @@ export function CheckoutPage() {
                 </svg>
               </div>
               <p className="text-sm text-green-800">
-                Pago seguro al recibir tu pedido
+                Pago seguro al recibir tu pedido en {finalCurrency}
               </p>
             </div>
           )}
@@ -582,7 +615,7 @@ export function CheckoutPage() {
           navigate("/");
         }}
         trackingCode={generatedTrackingCode}
-        orderTotal={formatPrice(total, product.moneda || "USD")}
+        orderTotal={formatPrice(totalConverted, finalCurrency)}
       />
     </div>
   );

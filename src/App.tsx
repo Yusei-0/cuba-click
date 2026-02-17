@@ -17,12 +17,22 @@ import { AdminCategoriesPage } from "./pages/admin/categories/AdminCategoriesPag
 import { AdminCategoryFormPage } from "./pages/admin/categories/AdminCategoryFormPage";
 import { AdminProvidersPage } from "./pages/admin/providers/AdminProvidersPage";
 import { AdminProviderFormPage } from "./pages/admin/providers/AdminProviderFormPage";
+import { AdminExchangeRatesPage } from "./pages/admin/AdminExchangeRatesPage";
+import { AdminSettingsPage } from "./pages/admin/AdminSettingsPage";
 import { ProductDetailModal } from "./components/ProductDetailModal";
 
 import { CategoryResolver } from "./pages/CategoryResolver";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { useEffect } from "react";
+import { useExchangeRatesStore } from "./store/useExchangeRatesStore";
 
-function App() {
+export default function App() {
+  const { fetchRates } = useExchangeRatesStore();
+  
+  useEffect(() => {
+    fetchRates();
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>
@@ -53,15 +63,15 @@ function App() {
         {/* Standalone product detail (for direct links/SEO) */}
         <Route path="/producto/:slug" element={<ProductDetailPage />} />
         <Route path="/p/:slug" element={<ProductDetailPage />} />
-        <Route path="/favoritos" element={<FavoritesPage />} />
         
         {/* Dynamic Category Route & 404 */}
-        <Route path="/categorias/:categoryName" element={<CategoryResolver />} />
-        <Route path="/:categoryName" element={<CategoryResolver />} />
-        <Route path="*" element={<NotFoundPage />} />
+        <Route path="/categoria/:slug" element={<CategoryResolver />} />
+        <Route path="/category/:slug" element={<CategoryResolver />} />
+        <Route path="/404" element={<NotFoundPage />} />
 
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
+        
         <Route
           path="/admin"
           element={
@@ -71,21 +81,23 @@ function App() {
           }
         >
           <Route index element={<AdminDashboard />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="productos" element={<AdminProductsPage />} />
           <Route path="productos/nuevo" element={<AdminProductFormPage />} />
-          <Route path="productos/:id" element={<AdminProductFormPage />} />
+          <Route path="productos/editar/:id" element={<AdminProductFormPage />} />
+          <Route path="pedidos" element={<AdminOrdersPage />} />
           <Route path="categorias" element={<AdminCategoriesPage />} />
           <Route path="categorias/nueva" element={<AdminCategoryFormPage />} />
-          <Route path="categorias/:id" element={<AdminCategoryFormPage />} />
+          <Route path="categorias/editar/:id" element={<AdminCategoryFormPage />} />
           <Route path="proveedores" element={<AdminProvidersPage />} />
           <Route path="proveedores/nuevo" element={<AdminProviderFormPage />} />
-          <Route path="proveedores/:id" element={<AdminProviderFormPage />} />
-          <Route path="pedidos" element={<AdminOrdersPage />} />
+          <Route path="proveedores/editar/:id" element={<AdminProviderFormPage />} />
+          <Route path="tasas" element={<AdminExchangeRatesPage />} />
+          <Route path="configuracion" element={<AdminSettingsPage />} />
         </Route>
+
+        {/* Catch all */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
 }
-
-export default App;

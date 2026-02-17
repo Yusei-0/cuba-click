@@ -121,7 +121,7 @@ export function AdminProductsPage() {
                   <td>
                     <div className="flex gap-2">
                       <Link
-                        to={`/admin/productos/${p.id}`}
+                        to={`/admin/productos/editar/${p.id}`}
                         className="btn btn-sm btn-square btn-ghost"
                       >
                         <Edit className="w-4 h-4 text-primary" />

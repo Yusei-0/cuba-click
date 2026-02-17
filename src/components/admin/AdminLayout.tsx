@@ -10,6 +10,8 @@ import {
   Users,
   Layers,
   Home,
+  Banknote,
+  Settings,
 } from "lucide-react";
 
 export function AdminLayout() {
@@ -18,11 +20,13 @@ export function AdminLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const menuItems = [
-    { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { path: "/admin/productos", label: "Productos", icon: Package },
     { path: "/admin/categorias", label: "Categorías", icon: Layers },
     { path: "/admin/proveedores", label: "Proveedores", icon: Users },
     { path: "/admin/pedidos", label: "Pedidos", icon: ShoppingBag },
+    { path: "/admin/tasas", label: "Tasas de Cambio", icon: Banknote },
+    { path: "/admin/configuracion", label: "Configuración", icon: Settings },
   ];
 
   return (

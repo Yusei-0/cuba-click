@@ -104,7 +104,7 @@ export function AdminCategoriesPage() {
                   <td className="text-right">
                     <div className="flex justify-end gap-2">
                       <Link
-                        to={`/admin/categorias/${c.id}`}
+                        to={`/admin/categorias/editar/${c.id}`}
                         className="btn btn-sm btn-square btn-ghost"
                       >
                         <Edit className="w-4 h-4 text-primary" />

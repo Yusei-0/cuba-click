@@ -169,7 +169,7 @@ export function HomePage() {
                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-primary">
                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 10 12 10 12 18 4 18 4 22 19 22 19 18 20 18 20 10 19 10 16 10"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
                        </div>
-                       <p className="text-xs font-medium text-gray-600">Envíos a toda la isla</p>
+                       <p className="text-xs font-medium text-gray-600">Envíos a toda La Habana</p>
                    </div>
                    <div className="flex flex-col items-center gap-2">
                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-primary">
