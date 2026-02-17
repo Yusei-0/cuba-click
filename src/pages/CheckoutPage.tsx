@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useCartStore } from "../store/useCartStore";
@@ -32,6 +32,7 @@ export function CheckoutPage() {
   const { generateUniqueCode } = useTrackingCode();
   const navigate = useNavigate();
   const { addToast } = useToastStore();
+  const isOrderCompleted = useRef(false);
 
   const [municipios, setMunicipios] = useState<Municipality[]>([]);
   const [selectedMoneda, setSelectedMoneda] = useState<string>("");
@@ -63,7 +64,7 @@ export function CheckoutPage() {
   // Load initial data
   useEffect(() => {
     async function initData() {
-      if (items.length === 0) {
+      if (items.length === 0 && !isOrderCompleted.current) {
         navigate("/cart");
         return;
       }
@@ -224,6 +225,9 @@ export function CheckoutPage() {
       };
       
       addOrder(localOrderData);
+
+      // Set flag to prevent redirect to cart
+      isOrderCompleted.current = true;
 
       // Clear cart
       clearCart();
