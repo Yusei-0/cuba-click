@@ -5,6 +5,7 @@ import ProductDetailPage from "./pages/ProductDetailPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import { CartPage } from "./pages/CartPage";
 import { CheckoutPage } from "./pages/CheckoutPage";
+import { OrderConfirmationPage } from "./pages/OrderConfirmationPage";
 import { OrdersPage } from "./pages/OrdersPage";
 import { AdminLoginPage } from "./pages/admin/AdminLoginPage";
 import { AdminLayout } from "./components/admin/AdminLayout";
@@ -57,8 +58,9 @@ export default function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/carrito" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/pedido-confirmado/:id" element={<OrderConfirmationPage />} />
         <Route path="/pedidos" element={<OrdersPage />} />
-        <Route path="/orders" element={<OrdersPage />} />
         
         {/* Standalone product detail (for direct links/SEO) */}
         <Route path="/producto/:slug" element={<ProductDetailPage />} />

@@ -22,7 +22,6 @@ import {
 import { CustomSelect } from "../components/ui/CustomSelect";
 import { useToastStore } from "../store/useToastStore";
 import { formatPrice } from "../lib/utils";
-import { OrderSuccessModal } from "../components/OrderSuccessModal";
 import { CheckoutSkeleton } from "../components/CheckoutSkeleton";
 
 type Municipality = Database["public"]["Tables"]["municipios"]["Row"];
@@ -51,8 +50,6 @@ export function CheckoutPage() {
   const [shippingCost, setShippingCost] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [generatedTrackingCode, setGeneratedTrackingCode] = useState("");
 
   // Get product info (assuming single product checkout for now)
   const product = items[0];
@@ -231,10 +228,9 @@ export function CheckoutPage() {
       // Clear cart
       clearCart();
 
-      // Show success modal
-      setGeneratedTrackingCode(trackingCode);
-      setShowSuccessModal(true);
-
+      // Redirect to confirmation page
+      navigate(`/pedido-confirmado/${order.id}`);
+      
       addToast("Pedido creado exitosamente", "success");
     } catch (error) {
       console.error("Error creating order:", error);
@@ -607,16 +603,6 @@ export function CheckoutPage() {
         </button>
       </form>
 
-      {/* Success Modal */}
-      <OrderSuccessModal
-        isOpen={showSuccessModal}
-        onClose={() => {
-          setShowSuccessModal(false);
-          navigate("/");
-        }}
-        trackingCode={generatedTrackingCode}
-        orderTotal={formatPrice(totalConverted, finalCurrency)}
-      />
     </div>
   );
 }

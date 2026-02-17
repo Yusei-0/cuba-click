@@ -51,6 +51,22 @@ export function usePaymentMethods(
 
         const baseConfig = (configData as any)?.value || { moneda_id: '', metodo_pago_id: '' };
 
+        // 1.1 Fetch Base Currency Code if config exists
+        let baseCurrencyCode = '';
+        if (baseConfig.moneda_id) {
+            const { data: monedaDataResult } = await supabase
+                .from('monedas')
+                .select('codigo')
+                .eq('id', baseConfig.moneda_id)
+                .single();
+            
+            const monedaData = monedaDataResult as any;
+
+            if (monedaData) {
+                baseCurrencyCode = monedaData.codigo;
+            }
+        }
+
         // 2. Fetch Provider's Allowed Methods (just the IDs)
         const { data: providerMethods, error: providerError } = await supabase
           .from('proveedor_moneda_metodos_pago')
@@ -61,23 +77,13 @@ export function usePaymentMethods(
               nombre
             )
           `)
-          .eq('proveedor_id', providerId)
-          .eq('moneda', moneda);
+          .eq('proveedor_id', providerId) // Provider
+          .eq('moneda', moneda); // The selected currency (e.g. 'USD')
         
         if (providerError) throw providerError;
 
         // 3. Perform Logic
-        // If product currency matches base currency match, we use dynamic rates.
-        // Otherwise, or if no config, we might fallback or handle differently.
-        // For now, assuming product currency matches base currency for this logic to apply effectively
-        // or we simply look for rates starting from the Base.
-
-        // Let's fetch compatible rates from the rates table
-        // Source: Base Config
-        // Destination Method: Must be one of the provider's allowed methods
-        
-        const allowedMethodIds = providerMethods?.map((pm: any) => pm.metodo_pago_id) || [];
-
+        const allowedMethodIds = (providerMethods as any[])?.map((pm: any) => pm.metodo_pago_id) || [];
         let validRates: any[] = [];
 
         if (baseConfig.moneda_id && baseConfig.metodo_pago_id && allowedMethodIds.length > 0) {
@@ -97,26 +103,47 @@ export function usePaymentMethods(
             }
         }
 
-        // 4. Map Results
-        // We create a PaymentMethod for each valid rate found
-        // If no rate is found for a method, maybe we shouldn't show it? 
-        // Or show it with rate 1 if currency matches?
+        // 3.1 Handle Identity Case (Same Currency, Same Method)
+        // If the selected currency 'moneda' (e.g. 'USD') matches 'baseCurrencyCode'
+        // AND the provider supports the 'baseConfig.metodo_pago_id' (e.g. Cash)
+        // Then we should add it with Rate 1.0 even if not in DB.
         
+        if (baseCurrencyCode && moneda === baseCurrencyCode) {
+             const baseMethodSupported = (providerMethods as any[])?.find((pm: any) => pm.metodo_pago_id === baseConfig.metodo_pago_id);
+             
+             if (baseMethodSupported) {
+                 // Check if it's already in validRates (maybe DB has specific rate)
+                 const existingRateIndex = validRates.findIndex(r => r.metodo_pago_destino_id === baseConfig.metodo_pago_id);
+                 
+                 if (existingRateIndex === -1) {
+                     // Add identity rate
+                     validRates.push({
+                         metodo_pago_destino_id: baseConfig.metodo_pago_id,
+                         tasa: 1, // Identity rate
+                         moneda_destino: { codigo: baseCurrencyCode },
+                         metodo_pago_destino: { nombre: baseMethodSupported.metodos_pago?.nombre }
+                     });
+                 } else {
+                     // Force it to 1.0 if it's the same method ID (Identity)
+                     validRates[existingRateIndex].tasa = 1;
+                 }
+             }
+        }
+
+        // 4. Map Results
         const finalMethods: PaymentMethod[] = [];
 
         validRates.forEach(rate => {
-            finalMethods.push({
-                id: rate.metodo_pago_destino_id,
-                nombre: rate.metodo_pago_destino?.nombre || 'Desconocido',
-                tasa: rate.tasa,
-                moneda_destino: rate.moneda_destino?.codigo
-            });
+            // Filter out if the currency doesn't match the selected 'moneda'
+            if (rate.moneda_destino?.codigo === moneda) {
+                finalMethods.push({
+                    id: rate.metodo_pago_destino_id,
+                    nombre: rate.metodo_pago_destino?.nombre || 'Desconocido',
+                    tasa: rate.tasa,
+                    moneda_destino: rate.moneda_destino?.codigo
+                });
+            }
         });
-        
-        // Also consider default "Same Currency" methods if they exist in provider list but not in rates?
-        // For now, let's strictly return what we have rates for, AS REQUESTED "vincular las tasas... con la configuracion".
-        // BUT if the base coin == target coin (e.g. USD Cash -> USD Transfer), there might not be a rate? 
-        // Usually there is a rate 1.0 or with fee.
         
         setMethods(finalMethods);
 
